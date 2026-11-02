@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.DS_Store
+.ipynb_checkpoints/
+data/
+runs/
+*.keras
+*.h5
+.env
+kaggle.json

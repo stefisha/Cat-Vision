@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="380" viewBox="0 0 1280 380" role="img" aria-labelledby="title desc">
+<title id="title">Cat Vision — curiosity meets computer vision</title>
+<desc id="desc">A midnight-blue banner with a stylized orange cat and a reproducible machine-learning pipeline.</desc>
+<rect width="1280" height="380" rx="24" fill="#101c30"/>
+<g fill="none" stroke="#263b54" stroke-width="1"><path d="M0 95H1280M0 190H1280M0 285H1280M160 0V380M320 0V380M480 0V380M640 0V380M800 0V380M960 0V380M1120 0V380"/></g>
+<text x="70" y="80" font-family="Arial,sans-serif" font-size="16" letter-spacing="4" fill="#79d9d0">A CAT PERSON'S ML PROJECT</text>
+<text x="66" y="173" font-family="Arial,sans-serif" font-size="80" font-weight="700" fill="#fff5e6">Cat Vision</text>
+<text x="70" y="223" font-family="Arial,sans-serif" font-size="26" fill="#b9c9dc">Curiosity meets computer vision.</text>
+<g font-family="Arial,sans-serif" font-size="16" fill="#b9c9dc"><text x="70" y="314">VALIDATE</text><text x="206" y="314">SPLIT</text><text x="320" y="314">TRAIN</text><text x="441" y="314">EVALUATE</text><text x="595" y="314">PREDICT</text></g>
+<path d="M167 308h23m71 0h40m76 0h45m110 0h45" stroke="#79d9d0" stroke-width="2"/>
+<g transform="translate(1010 186)"><circle r="130" fill="#192d46"/><path d="M-88-17l-7-102 69 52q26-9 52 0l69-52-7 102q25 93-88 105Q-113 76-88-17" fill="#efa85f"/><path d="M-77-91l4 46 27-18M77-91l-4 46-27-18" fill="#d47c48"/><path d="M-54-4q18-19 36 0m36 0q18-19 36 0" stroke="#101c30" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M-9 23h18L0 33z" fill="#101c30"/><path d="M0 33v10m0 0q-15 17-25 0m25 0q15 17 25 0" fill="none" stroke="#101c30" stroke-width="4" stroke-linecap="round"/><path d="M-53 26l-53-9m55 25l-53 8m157-24l53-9m-55 25l53 8" stroke="#fff5e6" stroke-width="3" stroke-linecap="round"/></g>
+</svg>
