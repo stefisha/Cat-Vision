@@ -57,6 +57,7 @@ def test_filename_id_grouping_and_sources(image_root, tmp_path):
     assert source_identity("Siamese/Siamese-45150207_7156.jpg") == ("petfinder", "45150207")
     assert source_identity("Sphynx/Sphynx--01.jpg") == ("google", None)
     assert source_identity("Birman/Birman_12.jpg") == ("oxford", None)
+    assert source_identity("custom/my-cat.jpg") == ("unknown", None)
 
 
 def test_audit_rejects_stale_or_duplicate_reviews(image_root, tmp_path):

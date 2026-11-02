@@ -18,7 +18,9 @@ def source_identity(path: str) -> tuple[str, str | None]:
     match = re.search(r"(?<!-)-(\d+)_", name)
     if match:
         return "petfinder", match.group(1)
-    return ("google" if "--" in name else "oxford"), None
+    if "--" in name:
+        return "google", None
+    return ("oxford" if re.search(r"_\d+\.[^.]+$", name) else "unknown"), None
 
 
 def image_signatures(path: Path) -> dict:
