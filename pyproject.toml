@@ -10,10 +10,11 @@ readme = "README.md"
 requires-python = ">=3.11,<3.13"
 license = {text = "MIT"}
 authors = [{name = "Stefan", email = "45048235+stefisha@users.noreply.github.com"}]
-dependencies = ["numpy==1.26.4", "Pillow==13.0.0", "scikit-learn==1.6.1"]
+dependencies = ["numpy==1.26.4", "Pillow==13.0.0", "scikit-learn==1.6.1", "scipy==1.17.1"]
 
 [project.optional-dependencies]
 ml = ["tensorflow==2.21.0"]
+report = ["matplotlib==3.11.2"]
 dev = ["pytest==8.3.5", "ruff==0.11.2"]
 
 [project.scripts]

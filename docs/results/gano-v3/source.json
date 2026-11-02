@@ -1,0 +1,24 @@
+{
+  "api_metadata_url": "https://www.kaggle.com/api/v1/datasets/view/shawngano/gano-cat-breed-image-collection",
+  "archive_bytes": 266219297,
+  "archive_sha256": "4af0320b13d0dff4cf2ab332557d7d0eba60624115779e854968dad25ba40c15",
+  "creator": "ShawnGano / Olivia Gano collection",
+  "dataset": "Gano Cat Breed Image Collection",
+  "kaggle_version": 3,
+  "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "notes": [
+    "Tuxedo is a coat pattern, retained as a source-provided class.",
+    "PetFinder labels were supplied by advertisers; label noise is possible.",
+    "The stated collection license is not an independent verification of every source photograph.",
+    "Dataset photographs are not redistributed in this repository."
+  ],
+  "retrieved_on": "2026-11-03",
+  "stated_collection_license": "CC BY-SA 4.0",
+  "upstream_sources": [
+    "https://www.kaggle.com/datasets/zippyz/cats-and-dogs-breeds-classification-oxford-dataset",
+    "https://www.kaggle.com/datasets/ma7555/cat-breeds-dataset",
+    "Google Images"
+  ],
+  "url": "https://www.kaggle.com/datasets/shawngano/gano-cat-breed-image-collection",
+  "version_notes": "Version 1.1"
+}

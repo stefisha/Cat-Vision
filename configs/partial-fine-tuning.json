@@ -1,0 +1,11 @@
+{
+  "seed": 42,
+  "image_size": 224,
+  "batch_size": 32,
+  "epochs": 5,
+  "learning_rate": 1e-05,
+  "patience": 2,
+  "weights": "imagenet",
+  "augmentation": "none",
+  "fine_tune_layers": 20
+}

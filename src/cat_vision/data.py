@@ -35,7 +35,7 @@ def read_image(path: Path, size: int):
         return np.asarray(image.resize((size, size), Image.Resampling.BILINEAR), dtype="float32")
 
 
-def prepare(root: Path, output: Path, seed: int = 42) -> dict:
+def prepare(root: Path, output: Path, seed: int = 42, audit_path: Path | None = None) -> dict:
     root = root.resolve()
     if output.exists():
         raise ValueError(f"Refusing to overwrite an existing manifest: {output}")
@@ -75,11 +75,53 @@ def prepare(root: Path, output: Path, seed: int = 42) -> dict:
     groups = defaultdict(list)
     for row in records:
         groups[row["label"]].append(row)
+    audit_report = None
+    if audit_path:
+        audit_report = json.loads(audit_path.read_text())
+        if audit_report.get("schema_version") != 1 or not audit_report.get("review_complete"):
+            raise ValueError("Audit needs a supported schema and completed similarity reviews")
+        audited = {row["path"]: row["sha256"] for row in audit_report["records"]}
+        current = {row["path"]: row["sha256"] for row in records}
+        for duplicate in duplicates:
+            current[duplicate["path"]] = current[duplicate["duplicate_of"]]
+        if current != audited:
+            raise ValueError("Audit does not match current dataset contents")
+        group_labels = defaultdict(set)
+        for row in records:
+            row["group"] = audit_report["groups"][row["path"]]
+            group_labels[row["group"]].add(row["label"])
+        if any(len(labels) > 1 for labels in group_labels.values()):
+            raise ValueError("A similarity/identity group has conflicting labels; review it first")
     rng = random.Random(seed)
     for label in classes:
         rows = groups[label]
         if len(rows) < 3:
             raise ValueError(f"Class {label!r} needs at least 3 unique, valid images")
+        if audit_report:
+            grouped = defaultdict(list)
+            for row in rows:
+                grouped[row["group"]].append(row)
+            units = list(grouped.values())
+            if len(units) < 3:
+                raise ValueError(f"Class {label!r} needs at least 3 independent groups")
+            rng.shuffle(units)
+            units.sort(key=len, reverse=True)
+            targets = {
+                "train": len(rows) * 0.7,
+                "validation": len(rows) * 0.15,
+                "test": len(rows) * 0.15,
+            }
+            assigned = dict.fromkeys(targets, 0)
+            for i, unit in enumerate(units):
+                split = (
+                    list(targets)[i]
+                    if i < 3
+                    else min(targets, key=lambda name: assigned[name] / targets[name])
+                )
+                for row in unit:
+                    row["split"] = split
+                assigned[split] += len(unit)
+            continue
         rng.shuffle(rows)
         held_out = max(1, round(len(rows) * 0.15))
         for i, row in enumerate(rows):
@@ -95,18 +137,30 @@ def prepare(root: Path, output: Path, seed: int = 42) -> dict:
         "rejected": rejected,
         "duplicates": duplicates,
     }
+    if audit_report:
+        manifest.update(
+            {
+                "schema_version": 2,
+                "audit_sha256": fingerprint(audit_report),
+                "split_policy": (
+                    "per-class group-disjoint approximately 70/15/15; largest groups first"
+                ),
+                "group_policy": audit_report["policy"],
+            }
+        )
     validate_manifest(manifest)
     write_json(output, manifest)
     return manifest
 
 
 def validate_manifest(manifest: dict) -> None:
-    if manifest.get("schema_version") != 1:
+    if manifest.get("schema_version") not in (1, 2):
         raise ValueError("Unsupported manifest schema")
     classes = manifest["classes"]
     if len(classes) < 2 or classes != sorted(set(classes)):
         raise ValueError("Manifest classes must be unique and sorted")
     paths, hashes, coverage = set(), set(), set()
+    group_splits = {}
     for row in manifest["records"]:
         path = Path(row["path"])
         if path.is_absolute() or ".." in path.parts:
@@ -115,6 +169,13 @@ def validate_manifest(manifest: dict) -> None:
             raise ValueError("Invalid manifest label or split")
         if row["path"] in paths or row["sha256"] in hashes:
             raise ValueError("Duplicate path or image hash in manifest")
+        if manifest["schema_version"] == 2:
+            group = row.get("group")
+            if not isinstance(group, str) or not group:
+                raise ValueError("Grouped manifests require a group for every image")
+            if group in group_splits and group_splits[group] != row["split"]:
+                raise ValueError("An image group crosses dataset splits")
+            group_splits[group] = row["split"]
         paths.add(row["path"])
         hashes.add(row["sha256"])
         coverage.add((row["label"], row["split"]))

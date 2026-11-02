@@ -1,0 +1,176 @@
+[
+  {
+    "left": "Abyssinian/Abyssinian_122.jpg",
+    "right": "Abyssinian/Abyssinian_172.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Abyssinian/Abyssinian_11.jpg",
+    "right": "Abyssinian/Abyssinian_177.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Abyssinian/Abyssinian_24.jpg",
+    "right": "Abyssinian/Abyssinian_56.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Abyssinian/Abyssinian_40.jpg",
+    "right": "Abyssinian/Abyssinian_63.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Abyssinian/Abyssinian_5.jpg",
+    "right": "Abyssinian/Abyssinian_87.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Abyssinian/Abyssinian_151.jpg",
+    "right": "Abyssinian/Abyssinian_99.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Bengal/Bengal_153.jpg",
+    "right": "Birman/Birman_101.jpg",
+    "same_photo": false,
+    "note": "Visually distinct photos; similarity-hash false positive."
+  },
+  {
+    "left": "Birman/Birman_199.jpg",
+    "right": "Birman/Birman_25.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Bombay/Bombay_107.jpg",
+    "right": "Bombay/Bombay_132.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Bombay/Bombay_114.jpg",
+    "right": "Bombay/Bombay_139.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Bombay/Bombay_136.jpg",
+    "right": "Bombay/Bombay_150.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Bombay/Bombay_113.jpg",
+    "right": "Bombay/Bombay_157.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Bombay/Bombay_107.jpg",
+    "right": "Bombay/Bombay_19.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Bombay/Bombay_132.jpg",
+    "right": "Bombay/Bombay_19.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Bombay/Bombay_38.jpg",
+    "right": "Bombay/Bombay_57.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Bombay/Bombay_146.jpg",
+    "right": "Bombay/Bombay_82.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Bombay/Bombay_79.jpg",
+    "right": "Bombay/Bombay_97.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "British Shorthair/British_Shorthair_186.jpg",
+    "right": "British Shorthair/British_Shorthair_271.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "British Shorthair/British_Shorthair_160.jpg",
+    "right": "British Shorthair/British_Shorthair_278.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau-32372315_531.jpg",
+    "right": "Egyptian Mau/Egyptian_Mau_109.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau--1.jpg",
+    "right": "Egyptian Mau/Egyptian_Mau_116.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau--14.jpg",
+    "right": "Egyptian Mau/Egyptian_Mau_160.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau_138.jpg",
+    "right": "Egyptian Mau/Egyptian_Mau_219.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau_167.jpg",
+    "right": "Egyptian Mau/Egyptian_Mau_3.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau_186.jpg",
+    "right": "Egyptian Mau/Egyptian_Mau_6.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau_139.jpg",
+    "right": "Egyptian Mau/Egyptian_Mau_7.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Persian/Persian-28056295_6739.jpg",
+    "right": "Persian/Persian-28513962_6502.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Ragdoll/Ragdoll_160.jpg",
+    "right": "Ragdoll/Ragdoll_161.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  },
+  {
+    "left": "Siamese/Siamese_196.jpg",
+    "right": "Siamese/Siamese_203.jpg",
+    "same_photo": true,
+    "note": "Visual review: same photograph with resizing/compression/crop differences."
+  }
+]
