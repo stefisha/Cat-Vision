@@ -16,7 +16,7 @@ Download manually and review the dataset page, license, attribution, and image p
 
 ## Preparation policy
 
-1. Decode supported images. Record unreadable images and their error messages.
+1. Decode supported images. Record unreadable images and their error messages, including images rejected by Pillow's decompression-bomb error. Pillow's pixel safety limit remains enabled.
 2. Hash file bytes with SHA-256. Keep one instance of an identical image within a breed. Stop on identical bytes under conflicting labels.
 3. Shuffle each sorted breed group with a seeded local random generator.
 4. Allocate `max(1, round(0.15 * class_count))` each to test and validation; use the rest for training. Python's rounding applies. Tiny classes will not have a 70/15/15 ratio.

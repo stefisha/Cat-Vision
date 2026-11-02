@@ -73,14 +73,7 @@ def train(root: Path, manifest_path: Path, run: Path, config: dict) -> None:
     manifest = load_manifest(manifest_path, root)
     if run.exists():
         raise ValueError(f"Run directory already exists: {run}")
-    tf = tensorflow()
-    started = time.perf_counter()
-    tf.keras.utils.set_random_seed(config["seed"])
-    tf.config.experimental.enable_op_determinism()
-    run.mkdir(parents=True)
-    write_json(run / "config.json", config)
-    write_json(run / "manifest.json", manifest)
-    write_json(run / "classes.json", manifest["classes"])
+    # Capture the source state before this run creates any output files.
     source_root = Path(__file__).resolve().parents[2]
     try:
         if not (source_root / "pyproject.toml").is_file():
@@ -97,6 +90,14 @@ def train(root: Path, manifest_path: Path, run: Path, config: dict) -> None:
         )
     except (subprocess.CalledProcessError, FileNotFoundError):
         revision, dirty = None, None
+    tf = tensorflow()
+    started = time.perf_counter()
+    tf.keras.utils.set_random_seed(config["seed"])
+    tf.config.experimental.enable_op_determinism()
+    run.mkdir(parents=True)
+    write_json(run / "config.json", config)
+    write_json(run / "manifest.json", manifest)
+    write_json(run / "classes.json", manifest["classes"])
     write_json(
         run / "provenance.json",
         {

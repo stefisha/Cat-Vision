@@ -78,7 +78,7 @@ cat-vision train \
   --run-dir runs/baseline-v1
 ```
 
-The first baseline run downloads ImageNet weights. Validation loss selects `model.keras`; the test set is never supplied to `fit`. Run directories are immutable destinations: choose a new name for each experiment. See [training and experiments](docs/experiments.md) for the rationale and run artifacts.
+`--config` is required; pass an absolute config path when running outside the checkout. The first baseline run downloads ImageNet weights. Validation loss selects `model.keras`; the test set is never supplied to `fit`. Run directories are immutable destinations: choose a new name for each experiment. See [training and experiments](docs/experiments.md) for the rationale and run artifacts.
 
 ### 4. Evaluate once the experiment is selected
 

@@ -38,3 +38,11 @@ A separate subprocess smoke run exercises the installed CLI for each step. Its s
 - A real-data baseline: the source images were not available in this workspace. Obtain the dataset, audit it, and follow the README's workflow before publishing any new performance claim.
 
 GitHub Actions defines separate lightweight and TensorFlow CPU jobs on Ubuntu/Python 3.11, using the frozen dependency lock. Their current execution status is shown in the pull request and repository Actions tab; a local macOS pass does not substitute for a Linux CI pass.
+
+## Review corrections · 2026-11-03
+
+Copilot identified three defects: a working-directory-dependent default training config, uncaught Pillow decompression-bomb errors, and a Git dirty flag captured after run files were created. Regression tests reproduced all three failures before the fixes.
+
+Training now requires `--config` explicitly; tests invoke the CLI from outside the checkout and verify both the missing-argument diagnostic and loading an absolute config path. Preparation records `Image.DecompressionBombError` in `rejected` while leaving Pillow's safety limit enabled; a small real-image fixture exercises the error by temporarily lowering the threshold in the test only. Training captures source Git state before writing outputs; the TensorFlow integration test uses a temporary Git checkout and verifies both clean and pre-existing dirty states with outputs in a non-ignored directory.
+
+After these changes, `pytest -q` reports **22 passed** on the same Python 3.11/Apple Silicon CPU environment. Ruff lint/format checks and `git diff --check` pass. These checks still make no claim about real-data model quality.

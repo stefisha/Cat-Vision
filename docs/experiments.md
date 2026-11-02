@@ -2,6 +2,8 @@
 
 ## Baseline configuration
 
+`--config` is required so installed CLI runs never depend on an implicit path in the current working directory. Use an absolute path when invoking training from another directory.
+
 `configs/baseline.json` is the initial recipe: seed 42, 224×224 RGB images, batches of 32, Adam at 0.001, a maximum of 20 epochs, and patience 4. Training uses sparse categorical cross-entropy. A frozen ImageNet MobileNetV2 backbone feeds dropout 0.3 and a softmax classifier. Horizontal flips apply during training only.
 
 Validation loss selects the best checkpoint and drives early stopping. The test split is only used by the explicit evaluation command. There is no automatic fine-tuning stage; start with an understandable frozen-feature baseline.

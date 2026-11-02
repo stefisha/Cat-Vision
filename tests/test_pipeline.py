@@ -1,4 +1,5 @@
 import json
+import subprocess
 
 import numpy as np
 import pytest
@@ -8,7 +9,7 @@ from cat_vision.data import prepare
 pytestmark = pytest.mark.ml
 
 
-def test_full_run_roundtrip_and_metadata_guards(image_root, tmp_path):
+def test_full_run_roundtrip_and_metadata_guards(image_root, tmp_path, monkeypatch):
     tf = pytest.importorskip("tensorflow")
     from cat_vision.pipeline import evaluate, load_run, predict, train
 
@@ -16,7 +17,36 @@ def test_full_run_roundtrip_and_metadata_guards(image_root, tmp_path):
     tf.config.threading.set_intra_op_parallelism_threads(1)
     manifest = tmp_path / "manifest.json"
     prepare(image_root, manifest)
-    run = tmp_path / "run"
+    # Isolate source provenance from the real working tree and put outputs outside ignores.
+    from cat_vision import pipeline
+
+    checkout = tmp_path / "checkout"
+    package = checkout / "src/cat_vision"
+    package.mkdir(parents=True)
+    (checkout / "pyproject.toml").write_text("# provenance test checkout\n")
+    subprocess.run(["git", "init", "--quiet", str(checkout)], check=True)
+    subprocess.run(["git", "-C", str(checkout), "add", "pyproject.toml"], check=True)
+    subprocess.run(
+        [
+            "git",
+            "-C",
+            str(checkout),
+            "-c",
+            "user.name=Test",
+            "-c",
+            "user.email=test@example.com",
+            "commit",
+            "--quiet",
+            "-m",
+            "fixture",
+        ],
+        check=True,
+    )
+    revision = subprocess.check_output(
+        ["git", "-C", str(checkout), "rev-parse", "HEAD"], text=True
+    ).strip()
+    monkeypatch.setattr(pipeline, "__file__", str(package / "pipeline.py"))
+    run = checkout / "experiments/run1"
     config = {
         "seed": 42,
         "image_size": 32,
@@ -27,6 +57,18 @@ def test_full_run_roundtrip_and_metadata_guards(image_root, tmp_path):
         "weights": None,
     }
     train(image_root, manifest, run, config)
+    provenance = json.loads((run / "provenance.json").read_text())
+    assert provenance["git_revision"] == revision
+    assert provenance["git_dirty"] is False
+    assert subprocess.check_output(
+        ["git", "-C", str(checkout), "status", "--porcelain"], text=True
+    ).strip()  # The run itself makes the checkout dirty only after the snapshot.
+    (checkout / "pyproject.toml").write_text("# uncommitted source change\n")
+    dirty_run = checkout / "experiments/run2"
+    train(image_root, manifest, dirty_run, dict(config, epochs=1))
+    dirty_provenance = json.loads((dirty_run / "provenance.json").read_text())
+    assert dirty_provenance["git_revision"] == revision
+    assert dirty_provenance["git_dirty"] is True
     metrics = evaluate(image_root, run)
     assert metrics["samples"] == 6
     assert np.asarray(metrics["confusion_matrix"]).sum() == 6

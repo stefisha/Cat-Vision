@@ -43,7 +43,7 @@ MobileNetV2 normalization follows the [official TensorFlow contract](https://www
 
 The manifest records relative paths, labels, content hashes, and split membership. A run copies it alongside configuration, class order, installed versions, Git revision and working-tree status. Completed runs fingerprint the configuration and checkpoint too; loading a run checks these fingerprints and the label order. Fixed seeds and TensorFlow deterministic operations reduce variability. They do not guarantee identical floating-point results across hardware, TensorFlow builds, or operating systems.
 
-The canonical environment is in `uv.lock`; a run's provenance records what actually executed. A dirty Git tree is recorded explicitly because a revision alone cannot reconstruct uncommitted code. Commit code before collecting portfolio results.
+The canonical environment is in `uv.lock`; a run's provenance records what actually executed. The source Git revision and dirty flag are captured before creating the run directory, so the run’s own outputs cannot change the recorded starting state. A dirty Git tree is recorded explicitly because a revision alone cannot reconstruct uncommitted code. Commit code before collecting portfolio results.
 
 ## Scope
 

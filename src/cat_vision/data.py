@@ -53,7 +53,7 @@ def prepare(root: Path, output: Path, seed: int = 42) -> dict:
             with Image.open(path) as image:
                 image.verify()
             read_image(path, 32)  # verify() alone does not fully decode the pixels
-        except (OSError, ValueError, SyntaxError) as exc:
+        except (OSError, ValueError, SyntaxError, Image.DecompressionBombError) as exc:
             rejected.append({"path": relative, "reason": str(exc)})
             continue
         sha = digest(path)

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased — review corrections
+
+- Require an explicit training config path so installed CLI runs do not assume the checkout is the current directory.
+- Record oversized-image decompression errors as data rejections without disabling Pillow's safety limit.
+- Snapshot Git provenance before creating run outputs, with regression coverage for clean and dirty source checkouts.
+
 ## 0.1.0 — reproducible project foundation
 
 - Package the original cat-breed experiment as a CLI with prepare, train, evaluate and predict commands.

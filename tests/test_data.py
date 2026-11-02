@@ -150,3 +150,17 @@ def test_invalid_config_fails_before_data_access(tmp_path, change):
             tmp_path / "missing-data", tmp_path / "missing-manifest.json", tmp_path / "run", config
         )
     assert not (tmp_path / "run").exists()
+
+
+def test_oversized_image_is_rejected_without_aborting(image_root, tmp_path, monkeypatch):
+    Image.new("RGB", (80, 80), "red").save(image_root / "Bengal/oversized.png")
+    # Valid fixtures have 1,920 pixels; 6,400 exceeds twice this reduced safety limit.
+    monkeypatch.setattr(Image, "MAX_IMAGE_PIXELS", 2500)
+    path = tmp_path / "manifest.json"
+    manifest = prepare(image_root, path)
+    assert len(manifest["records"]) == 36
+    assert len(manifest["rejected"]) == 1
+    assert manifest["rejected"][0]["path"] == "Bengal/oversized.png"
+    assert "decompression bomb" in manifest["rejected"][0]["reason"]
+    assert load_manifest(path, image_root) == manifest
+    assert Image.MAX_IMAGE_PIXELS == 2500
