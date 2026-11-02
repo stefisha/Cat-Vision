@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "cat-vision"
+version = "0.1.0"
+description = "A reproducible cat breed classification project built with MobileNetV2."
+readme = "README.md"
+requires-python = ">=3.11,<3.13"
+license = {text = "MIT"}
+authors = [{name = "Stefan", email = "45048235+stefisha@users.noreply.github.com"}]
+dependencies = ["numpy==1.26.4", "Pillow==13.0.0", "scikit-learn==1.6.1"]
+
+[project.optional-dependencies]
+ml = ["tensorflow==2.21.0"]
+dev = ["pytest==8.3.5", "ruff==0.11.2"]
+
+[project.scripts]
+cat-vision = "cat_vision.cli:main"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+extend-exclude = ["notebooks/original_experiment.ipynb"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["ml: TensorFlow integration tests (no pretrained-weight download)"]
