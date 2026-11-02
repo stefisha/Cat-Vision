@@ -29,6 +29,12 @@ def main():
     evaluation.add_argument("--data-dir", type=Path, required=True)
     evaluation.add_argument("--run-dir", type=Path, required=True)
     evaluation.add_argument("--split", choices=["test", "validation"], default="test")
+    report = sub.add_parser("report", help="Render evaluation figures and a local HTML report")
+    report.add_argument("--run-dir", type=Path, required=True)
+    report.add_argument("--output-dir", type=Path)
+    report.add_argument("--data-dir", type=Path)
+    report.add_argument("--include-images", action="store_true", help="Embed local dataset photos")
+    report.add_argument("--split", choices=["test", "validation"], default="test")
     prediction = sub.add_parser("predict", help="Return the highest-scoring breeds for one image")
     prediction.add_argument("--run-dir", type=Path, required=True)
     prediction.add_argument("--image", type=Path, required=True)
@@ -39,6 +45,13 @@ def main():
             from cat_vision.audit import audit
 
             result = audit(args.data_dir, args.output, args.decisions)["summary"]
+        elif args.command == "report":
+            from cat_vision.report import make_report
+
+            path = make_report(
+                args.run_dir, args.output_dir, args.data_dir, args.include_images, args.split
+            )
+            result = {"report": str(path)}
         elif args.command == "prepare":
             result = summary(prepare(args.data_dir, args.manifest, args.seed, args.audit))
         else:
