@@ -29,6 +29,9 @@ def main():
     evaluation.add_argument("--data-dir", type=Path, required=True)
     evaluation.add_argument("--run-dir", type=Path, required=True)
     evaluation.add_argument("--split", choices=["test", "validation"], default="test")
+    selection = sub.add_parser("select", help="Freeze a validation-only candidate selection")
+    selection.add_argument("--run-dir", type=Path, action="append", required=True)
+    selection.add_argument("--output", type=Path, required=True)
     report = sub.add_parser("report", help="Render evaluation figures and a local HTML report")
     report.add_argument("--run-dir", type=Path, required=True)
     report.add_argument("--output-dir", type=Path)
@@ -45,6 +48,10 @@ def main():
             from cat_vision.audit import audit
 
             result = audit(args.data_dir, args.output, args.decisions)["summary"]
+        elif args.command == "select":
+            from cat_vision.selection import select_runs
+
+            result = select_runs(args.run_dir, args.output)
         elif args.command == "report":
             from cat_vision.report import make_report
 
