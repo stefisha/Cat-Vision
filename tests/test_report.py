@@ -49,6 +49,10 @@ def test_report_generates_figures_and_escapes_labels(tmp_path):
     assert "data:image/jpeg" not in document
     assert document.count("data:image/png") == 4
     assert "Most confident mistakes" in document
+    assert "Tuxedo is a coat pattern" not in document
+    assert "<caption>Learning curves</caption>" in document
+    assert "<caption>Reliability bins</caption>" in document
+    assert "Confusion matrix counts (rows: actual, columns: predicted)</caption>" in document
     for name in ("confusion-matrix", "learning-curves", "per-label-recall", "reliability"):
         assert (path.parent / f"{name}.png").stat().st_size > 1000
     with pytest.raises(ValueError, match="requires --data-dir"):

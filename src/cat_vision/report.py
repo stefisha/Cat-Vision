@@ -189,12 +189,49 @@ small{color:#506274}figure{margin:20px 0}a{color:#236985}
             f'<h2>{title}</h2><figure><img src="data:image/png;base64,{encoded}" '
             f'alt="{title}"></figure>'
         )
+
+    def data_table(caption, headers, data):
+        heading = "".join(f'<th scope="col">{escape(value)}</th>' for value in headers)
+        body = "".join(
+            "<tr>" + "".join(f"<td>{escape(value)}</td>" for value in row) + "</tr>" for row in data
+        )
+        return (
+            f"<details><summary>{escape(caption)} (data table)</summary>"
+            f"<table><caption>{escape(caption)}</caption><thead><tr>{heading}</tr></thead>"
+            f"<tbody>{body}</tbody></table></details>"
+        )
+
+    accessible_data = data_table(
+        "Learning curves",
+        ["Epoch", "Train loss", "Validation loss", "Train accuracy", "Validation accuracy"],
+        [
+            [
+                i + 1,
+                f"{history['loss'][i]:.4f}",
+                f"{history['val_loss'][i]:.4f}",
+                f"{history['accuracy'][i]:.1%}",
+                f"{history['val_accuracy'][i]:.1%}",
+            ]
+            for i in range(len(history["loss"]))
+        ],
+    )
+    accessible_data += data_table(
+        "Confusion matrix counts (rows: actual, columns: predicted)",
+        ["Actual label", *classes],
+        [[label, *matrix[i].tolist()] for i, label in enumerate(classes)],
+    )
+    accessible_data += data_table(
+        "Reliability bins",
+        ["Mean score", "Accuracy", "Images"],
+        [[f"{x:.4f}", f"{y:.1%}", n] for x, y, n in zip(xs, ys, sizes, strict=True)],
+    )
     photo_note = (
         "Photographs are embedded in this local report. "
         "Review source-image rights before sharing it."
         if include_images
         else "Dataset photographs are omitted from this report."
     )
+    taxonomy_note = "Tuxedo is a coat pattern. " if "Tuxedo" in classes else ""
     document = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -204,9 +241,10 @@ small{color:#506274}figure{margin:20px 0}a{color:#236985}
 <p><strong>Accuracy {metrics["accuracy"]:.1%}</strong>{interval_text}<br>
 Macro F1 {metrics["macro_f1"]:.3f} · Top-3 accuracy {metrics["top_3_accuracy"]:.1%} ·
 Majority baseline {metrics["majority_baseline_accuracy"]:.1%}</p>
-<p>This measures performance within the audited collection. Tuxedo is a coat pattern.
+<p>This measures performance within the audited collection. {taxonomy_note}
 Softmax scores are uncalibrated; unknown breeds and non-cat images have not been evaluated.</p>
 {figures}
+<h2>Accessible diagnostic data</h2>{accessible_data}
 <h2>Per-label metrics</h2><table><tr><th>Label</th><th>Precision</th><th>Recall</th>
 <th>F1</th><th>Support</th></tr>{"".join(rows)}</table>
 <h2>Most confident mistakes</h2>

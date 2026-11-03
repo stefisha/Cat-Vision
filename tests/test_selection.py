@@ -13,7 +13,8 @@ def candidate(root, name, f1, loss, parameters=10):
     config = {"seed": 42}
     write_json(run / "manifest.json", manifest)
     write_json(run / "config.json", config)
-    (run / "model.keras").write_bytes(b"fake model artifact for selection contract test")
+    write_json(run / "classes.json", manifest["classes"])
+    (run / "model.keras").write_bytes(f"fake model artifact: {name}".encode())
     write_json(
         run / "provenance.json",
         dict(
@@ -34,6 +35,9 @@ def candidate(root, name, f1, loss, parameters=10):
             macro_f1=f1,
             accuracy=f1,
             log_loss=loss,
+            model_sha256=digest(run / "model.keras"),
+            config_sha256=fingerprint(config),
+            manifest_sha256=fingerprint(manifest),
         ),
     )
     return run
@@ -65,7 +69,39 @@ def test_selection_rejects_stale_or_incomparable_candidates(tmp_path):
         select_runs([first, second], tmp_path / "bad.json")
     provenance["manifest_sha256"] = fingerprint(json.loads((second / "manifest.json").read_text()))
     write_json(second / "provenance.json", provenance)
+    metrics = json.loads((second / "validation_metrics.json").read_text())
+    metrics["manifest_sha256"] = provenance["manifest_sha256"]
+    write_json(second / "validation_metrics.json", metrics)
     with pytest.raises(ValueError, match="same exact"):
         select_runs([first, second], tmp_path / "mixed.json")
     with pytest.raises(ValueError, match="duplicate"):
         select_runs([first, first], tmp_path / "duplicate.json")
+
+
+@pytest.mark.parametrize("key", ["model_sha256", "config_sha256", "manifest_sha256"])
+def test_selection_rejects_foreign_or_legacy_metric_fingerprints(tmp_path, key):
+    run = candidate(tmp_path, "candidate", 0.8, 0.5)
+    path = run / "validation_metrics.json"
+    metrics = json.loads(path.read_text())
+    original = dict(metrics)
+    metrics[key] = "foreign artifact"
+    write_json(path, metrics)
+    with pytest.raises(ValueError, match="Validation metrics fingerprints"):
+        select_runs([run], tmp_path / "foreign.json")
+    original.pop(key)
+    write_json(path, original)
+    with pytest.raises(ValueError, match="Validation metrics fingerprints"):
+        select_runs([run], tmp_path / "legacy.json")
+
+
+def test_selection_rejects_copied_scores_and_changed_saved_classes(tmp_path):
+    first = candidate(tmp_path, "first", 0.8, 0.5)
+    second = candidate(tmp_path, "second", 0.99, 0.01)
+    original = (first / "validation_metrics.json").read_text()
+    (first / "validation_metrics.json").write_text((second / "validation_metrics.json").read_text())
+    with pytest.raises(ValueError, match="Validation metrics fingerprints"):
+        select_runs([first], tmp_path / "copied.json")
+    (first / "validation_metrics.json").write_text(original)
+    write_json(first / "classes.json", ["B", "A"])
+    with pytest.raises(ValueError, match="class mapping"):
+        select_runs([first], tmp_path / "classes.json")

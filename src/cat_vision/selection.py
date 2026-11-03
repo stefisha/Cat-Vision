@@ -21,6 +21,7 @@ def select_runs(runs: list[Path], output: Path) -> dict:
         manifest = json.loads((run / "manifest.json").read_text())
         config = json.loads((run / "config.json").read_text())
         metrics = json.loads((run / "validation_metrics.json").read_text())
+        classes = json.loads((run / "classes.json").read_text())
         if provenance.get("status") != "complete":
             raise ValueError(f"Incomplete candidate: {run}")
         if (
@@ -29,7 +30,16 @@ def select_runs(runs: list[Path], output: Path) -> dict:
             or digest(run / "model.keras") != provenance["model_sha256"]
         ):
             raise ValueError(f"Candidate artifact fingerprint mismatch: {run}")
-        if metrics["split"] != "validation" or metrics["classes"] != manifest["classes"]:
+        if any(
+            metrics.get(key) != provenance[key]
+            for key in ("model_sha256", "config_sha256", "manifest_sha256")
+        ):
+            raise ValueError(f"Validation metrics fingerprints do not match run artifacts: {run}")
+        if (
+            metrics["split"] != "validation"
+            or metrics["classes"] != manifest["classes"]
+            or classes != manifest["classes"]
+        ):
             raise ValueError("Candidate scores must use validation and match the class mapping")
         scores = [metrics[key] for key in ("macro_f1", "accuracy", "log_loss")]
         if not np.all(np.isfinite(scores)):

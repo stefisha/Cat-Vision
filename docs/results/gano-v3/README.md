@@ -62,7 +62,7 @@ Intervals are from 2,000 seeded class-stratified group-bootstrap samples. They c
 
 ## Error analysis
 
-The largest directional confusions in the selected model's test matrix are:
+The largest directional confusions in the selected model's test matrix are shown below, including every pair tied at the cutoff of 7 images:
 
 | Actual source label | Predicted label | Images |
 | --- | --- | --- |
@@ -72,6 +72,8 @@ The largest directional confusions in the selected model's test matrix are:
 | American Bobtail | Bengal | 8 |
 | American Shorthair | American Bobtail | 8 |
 | American Bobtail | Egyptian Mau | 7 |
+| Birman | Ragdoll | 7 |
+| Egyptian Mau | Bengal | 7 |
 
 These are observed annotation disagreements, not proof that the model or the source label is biologically correct. Similar appearance, framing, source artifacts and noisy labels are hypotheses for follow-up inspection, not causes established by this experiment. Error analysis was performed after selection and was not used to modify these recipes.
 
@@ -83,7 +85,7 @@ The offline report includes the twelve most confident mistakes. Recreate it with
 
 ## Runtime and provenance
 
-Training ran on Apple Silicon CPU with TensorFlow intra-op/inter-op thread settings 6/1. The selected model checkpoint is 9.4 MiB. In one warm-model session, decode/resize plus batch-one inference had median **39.4 ms** and p95 **40.9 ms**, measured on 50 evenly spaced validation images after five warmups. This excludes process startup/model loading and is not a hosted-service latency guarantee. Details: [runtime.json](runtime.json).
+Training ran on Apple Silicon CPU. The inference benchmark used explicit TensorFlow intra-op/inter-op thread settings 6/1; those settings are not recorded in the historical training provenance. The selected model checkpoint is 9.4 MiB. In one warm-model session, decode/resize plus batch-one inference had median **39.4 ms** and p95 **40.9 ms**, measured on 50 evenly spaced validation images after five warmups. This excludes process startup/model loading and is not a hosted-service latency guarantee. Details: [runtime.json](runtime.json).
 
 Selected training revision: `389291d4b963ffccc78738fd3e6410b43f839347`; dirty at start: `False`. [Full model provenance](model-provenance.json) records Python, packages, platform/devices, parameter count, hashes and timing. [Selected config](model-config.json) and [classes](classes.json) complete the public record. The core training/evaluation code is unchanged across the candidate revisions; intermediate commits add reports, selection tooling and tests.
 

@@ -65,7 +65,12 @@ def train(
     }
     optional = {"augmentation", "fine_tune_layers"}
     if not expected.issubset(config) or set(config) - expected - optional:
-        raise ValueError(f"Config must contain exactly: {sorted(expected)}")
+        missing = sorted(expected - set(config))
+        unknown = sorted(set(config) - expected - optional)
+        raise ValueError(
+            f"Config required keys: {sorted(expected)}; optional keys: {sorted(optional)}; "
+            f"missing keys: {missing}; unknown keys: {unknown}"
+        )
     for key in ("seed", "image_size", "batch_size", "epochs", "patience"):
         if type(config[key]) is not int or config[key] < (0 if key == "seed" else 1):
             raise ValueError(f"Invalid {key}")
@@ -121,6 +126,8 @@ def train(
             for key in ("image_size", "augmentation")
         ):
             raise ValueError("Fine-tuning image size, augmentation and class mapping must match")
+        if parent_config["weights"] != config["weights"]:
+            raise ValueError("Fine-tuning weights initialization must match the inherited parent")
         backbone = next(layer for layer in model.layers if isinstance(layer, tf.keras.Model))
         if fine_tune > len(backbone.layers):
             raise ValueError("fine_tune_layers exceeds backbone layer count")
@@ -250,6 +257,9 @@ def evaluate(root: Path, run: Path, split: str = "test") -> dict:
     metrics = {
         "split": split,
         "samples": len(rows),
+        "model_sha256": provenance["model_sha256"],
+        "config_sha256": provenance["config_sha256"],
+        "manifest_sha256": provenance["manifest_sha256"],
         "classes": classes,
         "accuracy": float(accuracy_score(targets, predictions)),
         "log_loss": float(log_loss(targets, probabilities, labels=labels)),

@@ -71,9 +71,20 @@ def test_full_run_roundtrip_and_metadata_guards(image_root, tmp_path, monkeypatc
     assert dirty_provenance["git_dirty"] is True
     validation = evaluate(image_root, run, split="validation")
     assert validation["split"] == "validation"
+    for key in ("model_sha256", "config_sha256", "manifest_sha256"):
+        assert validation[key] == provenance[key]
     assert validation["samples"] == 6
     assert (run / "validation_metrics.json").exists()
     assert not (run / "metrics.json").exists()
+    with pytest.raises(ValueError, match="weights initialization"):
+        train(
+            image_root,
+            manifest,
+            checkout / "wrong-weights",
+            dict(config, fine_tune_layers=20, weights="imagenet"),
+            initial_run=run,
+        )
+    assert not (checkout / "wrong-weights").exists()
     fine_run = checkout / "experiments/fine-tuned"
     train(
         image_root,

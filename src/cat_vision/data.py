@@ -35,6 +35,47 @@ def read_image(path: Path, size: int):
         return np.asarray(image.resize((size, size), Image.Resampling.BILINEAR), dtype="float32")
 
 
+def _balance_oversized_holdouts(units: list[list[dict]], targets: dict, assigned: dict) -> None:
+    """Repair poor initial large-group placement without changing already balanced splits."""
+    tolerance = max(1, min(map(len, units)))
+    while any(assigned[name] > targets[name] + tolerance for name in ("validation", "test")):
+        counts = Counter(unit[0]["split"] for unit in units)
+        score = sum((assigned[name] - target) ** 2 for name, target in targets.items())
+        best, best_score = None, score
+        for i, unit in enumerate(units):
+            source, size = unit[0]["split"], len(unit)
+            for destination in targets:
+                if destination == source or counts[source] <= 1:
+                    continue
+                proposal = dict(assigned)
+                proposal[source] -= size
+                proposal[destination] += size
+                cost = sum((proposal[name] - target) ** 2 for name, target in targets.items())
+                if cost < best_score - 1e-9:
+                    best, best_score = (i, None, destination, proposal), cost
+            for j in range(i):
+                other = units[j]
+                destination = other[0]["split"]
+                if destination == source:
+                    continue
+                proposal = dict(assigned)
+                proposal[source] += len(other) - size
+                proposal[destination] += size - len(other)
+                cost = sum((proposal[name] - target) ** 2 for name, target in targets.items())
+                if cost < best_score - 1e-9:
+                    best, best_score = (i, j, destination, proposal), cost
+        if best is None:
+            return  # Remaining imbalance is constrained by indivisible groups/coverage.
+        i, j, destination, proposal = best
+        source = units[i][0]["split"]
+        for row in units[i]:
+            row["split"] = destination
+        if j is not None:
+            for row in units[j]:
+                row["split"] = source
+        assigned.update(proposal)
+
+
 def prepare(root: Path, output: Path, seed: int = 42, audit_path: Path | None = None) -> dict:
     root = root.resolve()
     if output.exists():
@@ -121,6 +162,7 @@ def prepare(root: Path, output: Path, seed: int = 42, audit_path: Path | None = 
                 for row in unit:
                     row["split"] = split
                 assigned[split] += len(unit)
+            _balance_oversized_holdouts(units, targets, assigned)
             continue
         rng.shuffle(rows)
         held_out = max(1, round(len(rows) * 0.15))

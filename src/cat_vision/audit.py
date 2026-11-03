@@ -113,12 +113,19 @@ def audit(root: Path, output: Path, decisions: Path | None = None) -> dict:
         raise ValueError("No valid images to audit")
     supplied = json.loads(decisions.read_text()) if decisions else []
     reviews = {}
+    image_hashes = {row["path"]: row["sha256"] for row in records}
     for decision in supplied:
         if type(decision.get("same_photo")) is not bool:
             raise ValueError("Each review decision needs a boolean same_photo")
         key = tuple(sorted((decision["left"], decision["right"])))
         if key in reviews:
             raise ValueError("Duplicate review decision")
+        for side in ("left", "right"):
+            path = decision[side]
+            if path not in image_hashes or decision.get(f"{side}_sha256") != image_hashes[path]:
+                raise ValueError(
+                    f"Review image hash missing or changed for {path}; review the pair again"
+                )
         reviews[key] = decision
     candidates = []
     phashes = [int(row["phash"], 16) for row in records]

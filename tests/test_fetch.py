@@ -45,3 +45,20 @@ def test_fetch_rejects_changed_archive_and_path_escape(tmp_path, monkeypatch):
     with pytest.raises(ValueError, match="Unsafe"):
         module.fetch(archive, tmp_path / "raw")
     assert not (tmp_path / "escape.txt").exists()
+
+
+def test_bad_download_never_reaches_archive_and_can_be_retried(tmp_path, monkeypatch):
+    module = load_fetcher()
+    valid = zip_bytes(f"{module.FOLDER}/Bengal/cat.jpg")
+    monkeypatch.setattr(module, "SHA256", hashlib.sha256(valid).hexdigest())
+    responses = iter([b"<html>login page with HTTP 200</html>", valid])
+    monkeypatch.setattr(
+        module.urllib.request, "urlopen", lambda *a, **kw: io.BytesIO(next(responses))
+    )
+    archive, destination = tmp_path / "archive.zip", tmp_path / "raw"
+    with pytest.raises(ValueError, match="checksum"):
+        module.fetch(archive, destination)
+    assert not archive.exists()
+    assert not archive.with_suffix(".zip.part").exists()
+    result = module.fetch(archive, destination)
+    assert (result / "Bengal/cat.jpg").exists()

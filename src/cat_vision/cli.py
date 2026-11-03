@@ -25,7 +25,9 @@ def main():
     train.add_argument("--run-dir", type=Path, required=True)
     train.add_argument("--initial-run", type=Path, help="Parent run for fine-tuning")
     train.add_argument("--config", type=Path, required=True, help="Path to training settings JSON")
-    evaluation = sub.add_parser("evaluate", help="Evaluate the saved checkpoint on the test split")
+    evaluation = sub.add_parser(
+        "evaluate", help="Evaluate the saved checkpoint on validation or test images"
+    )
     evaluation.add_argument("--data-dir", type=Path, required=True)
     evaluation.add_argument("--run-dir", type=Path, required=True)
     evaluation.add_argument("--split", choices=["test", "validation"], default="test")

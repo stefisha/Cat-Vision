@@ -23,9 +23,16 @@ def fetch(archive: Path, destination: Path) -> Path:
     archive.parent.mkdir(parents=True, exist_ok=True)
     if not archive.exists():
         partial = archive.with_suffix(".zip.part")
-        with urllib.request.urlopen(URL, timeout=60) as source, partial.open("wb") as output:
-            shutil.copyfileobj(source, output)
-        partial.replace(archive)
+        try:
+            with urllib.request.urlopen(URL, timeout=60) as source, partial.open("wb") as output:
+                shutil.copyfileobj(source, output)
+            with partial.open("rb") as handle:
+                actual = hashlib.file_digest(handle, "sha256").hexdigest()
+            if actual != SHA256:
+                raise ValueError(f"Archive checksum mismatch: {actual}")
+            partial.replace(archive)
+        finally:
+            partial.unlink(missing_ok=True)
     with archive.open("rb") as handle:
         actual = hashlib.file_digest(handle, "sha256").hexdigest()
     if actual != SHA256:

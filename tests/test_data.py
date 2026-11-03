@@ -164,3 +164,25 @@ def test_oversized_image_is_rejected_without_aborting(image_root, tmp_path, monk
     assert "decompression bomb" in manifest["rejected"][0]["reason"]
     assert load_manifest(path, image_root) == manifest
     assert Image.MAX_IMAGE_PIXELS == 2500
+
+
+def test_config_error_names_required_optional_and_unknown_keys(tmp_path):
+    from cat_vision.pipeline import train
+
+    config = dict(
+        seed=42,
+        image_size=32,
+        batch_size=4,
+        epochs=1,
+        learning_rate=0.001,
+        patience=1,
+        weights=None,
+        augmentation="none",
+        fine_tune_layer=20,
+    )
+    with pytest.raises(ValueError) as error:
+        train(tmp_path, tmp_path / "absent.json", tmp_path / "run", config)
+    message = str(error.value)
+    assert "required keys" in message and "optional keys" in message
+    assert "fine_tune_layers" in message and "augmentation" in message
+    assert "unknown keys: ['fine_tune_layer']" in message
