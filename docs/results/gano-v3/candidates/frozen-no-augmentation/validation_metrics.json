@@ -122,6 +122,7 @@
       "support": 841.0
     }
   },
+  "config_sha256": "5b202d189a71c86a542bdab3e9956216b5a8f4fa391b47f44aeee33fe8f17159",
   "confusion_matrix": [
     [
       46,
@@ -382,6 +383,8 @@
   "log_loss": 0.6173072549468697,
   "macro_f1": 0.7867774307700542,
   "majority_baseline_accuracy": 0.06777645659928656,
+  "manifest_sha256": "4e137af8a4f0a9e4a0c121602719f51bf71cc9d57f5263848e407e55f06b2abb",
+  "model_sha256": "5f6d3baa1a6f512ec03c9fc7d001741879a591c1ee297aead34d4bfec18e02e6",
   "samples": 841,
   "split": "validation",
   "top_3_accuracy": 0.9655172413793104,

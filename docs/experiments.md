@@ -51,7 +51,7 @@ cat-vision select \
   --output runs/gano-v3/selection.json
 ```
 
-Within a recipe, lowest validation loss selects the checkpoint. Compare the three saved checkpoints by validation macro F1; ties use lower validation log loss, then the simpler frozen model. Record the choice and checkpoint hashes before evaluating the selected run on test. The [selection record](results/gano-v3/selection.json) preserves this decision.
+Within a recipe, lowest validation loss selects the checkpoint. Compare the three saved checkpoints by validation macro F1; ties use lower validation log loss, then the simpler frozen model. Evaluation outputs bind scores to model, configuration and manifest SHA-256 values. Selection verifies all three fingerprints and the saved class mapping before ranking candidates. Legacy metric files without these identities must be regenerated with `evaluate --split validation`. Record the choice and checkpoint hashes before evaluating the selected run on test. The [selection record](results/gano-v3/selection.json) preserves this decision.
 
 Evaluation defaults to `--split test`. The test partition is never used by `fit`, and unselected candidates were not evaluated on it in this study. This is one seed and three planned recipes, not a search for the highest test score.
 
@@ -98,3 +98,16 @@ The reliability diagram evaluates uncalibrated softmax scores. No calibration mo
 ## Historical evidence
 
 The original notebook reached 88.16% **training** accuracy without a held-out split. It used a different classification head and data handling, so it is not directly comparable with this study's held-out score. Synthetic tests verify software contracts; they provide no evidence of breed-classification quality.
+
+
+## Repeat the CPU inference benchmark
+
+```bash
+python scripts/benchmark_inference.py \
+  --run-dir runs/gano-v3/frozen-horizontal-flip \
+  --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
+  --samples 50 --warmups 5 --intra-threads 6 --inter-threads 1 \
+  --output runs/gano-v3/runtime-repeat.json
+```
+
+The script sets TensorFlow thread counts explicitly before model initialization and uses evenly spaced validation images. It refuses to overwrite an existing measurement. Wall-clock results vary by hardware and current load; the historical `runtime.json` is retained as its original measurement. Historical training provenance does not record thread counts, so the explicit 6/1 configuration is attributed to the inference benchmark only.

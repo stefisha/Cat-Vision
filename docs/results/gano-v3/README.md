@@ -85,7 +85,7 @@ The offline report includes the twelve most confident mistakes. Recreate it with
 
 ## Runtime and provenance
 
-Training ran on Apple Silicon CPU. The inference benchmark used explicit TensorFlow intra-op/inter-op thread settings 6/1; those settings are not recorded in the historical training provenance. The selected model checkpoint is 9.4 MiB. In one warm-model session, decode/resize plus batch-one inference had median **39.4 ms** and p95 **40.9 ms**, measured on 50 evenly spaced validation images after five warmups. This excludes process startup/model loading and is not a hosted-service latency guarantee. Details: [runtime.json](runtime.json).
+Training ran on Apple Silicon CPU. The inference benchmark used explicit TensorFlow intra-op/inter-op thread settings 6/1; those settings are not recorded in the historical training provenance. The selected model checkpoint is 9.4 MiB. In one warm-model session, decode/resize plus batch-one inference had median **39.4 ms** and p95 **40.9 ms**, measured on 50 evenly spaced validation images after five warmups. This excludes process startup/model loading and is not a hosted-service latency guarantee. Details: [runtime.json](runtime.json). The committed [benchmark script](../../../scripts/benchmark_inference.py) and [exact command](../../experiments.md#repeat-the-cpu-inference-benchmark) reproduce the method with explicit thread settings.
 
 Selected training revision: `389291d4b963ffccc78738fd3e6410b43f839347`; dirty at start: `False`. [Full model provenance](model-provenance.json) records Python, packages, platform/devices, parameter count, hashes and timing. [Selected config](model-config.json) and [classes](classes.json) complete the public record. The core training/evaluation code is unchanged across the candidate revisions; intermediate commits add reports, selection tooling and tests.
 
@@ -94,3 +94,12 @@ The model bundle remains local rather than a public weight release. Reproduction
 ## What remains unmeasured
 
 No independent phone-photo benchmark, seed sweep, exhaustive animal-identity audit, unknown/non-cat rejection evaluation or calibration treatment has been completed. The source taxonomy and label noise limit what this study can establish. Test images should now be treated as observed evaluation evidence; any model changes informed by them need a fresh independent final holdout.
+
+
+## Review follow-up: evidence binding
+
+Review decisions now bind both image SHA-256 values. The hashes were taken from the original pre-training audit and verified against unchanged source bytes. Re-running the stricter audit and group preparation preserves the original audit fingerprint and complete frozen manifest.
+
+Evaluation outputs now identify the exact model/configuration/manifest that produced their scores. The same saved checkpoints were re-evaluated to populate those identities; numeric metrics and prediction files were unchanged. No model was retrained or chosen again using test feedback. [Integrity verification](review-integrity-verification.json) records the checks.
+
+The original pre-test [selection record](selection.json) is preserved byte for byte. Its validation-file hashes refer to the archived files under [pre-review-evidence/](pre-review-evidence/); current candidate metric files contain the added artifact identities. This preserves the original decision timeline while making future selection reject mixed artifacts.

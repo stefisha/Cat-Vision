@@ -42,7 +42,7 @@ The preprocessing and fine-tuning choices follow [TensorFlow's MobileNetV2 API](
 
 The manifest records relative paths, labels, image hashes and groups. Training/evaluation rehash the image bytes. A run copies the manifest, settings and ordered classes; completion fingerprints the model and config. Loading verifies those artifacts and model shapes. The source Git revision and dirty flag are captured before any run output is created. Fine-tuning records its initial checkpoint hash.
 
-Selection verifies completed checkpoints, configuration/manifest hashes, class mappings and a shared exact manifest. It reads validation metrics only and records their file hashes before writing an immutable selection record. These are guards against accidental artifact mixing, not authentication of untrusted files or a substitute for experimental discipline.
+Selection verifies completed checkpoints, configuration/manifest hashes, saved class mappings and a shared exact manifest. Evaluation metrics carry their own model/config/manifest fingerprints; selection rejects stale, unbound or copied scores. It reads validation metrics only and records their file hashes before writing an immutable selection record. These are guards against accidental artifact mixing, not authentication of untrusted files or a substitute for experimental discipline.
 
 `uv.lock` fixes the resolved environment. Runs record the actual installed versions, Python, platform/devices, duration and source revision. Fixed seeds and deterministic TensorFlow operations reduce variability; floating-point results can still differ across hardware and software builds.
 
