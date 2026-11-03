@@ -1,0 +1,16 @@
+label,train,validation,test
+Abyssinian,250,54,54
+American Bobtail,262,57,56
+American Shorthair,261,56,56
+Bengal,262,56,56
+Birman,262,57,56
+Bombay,249,54,54
+British Shorthair,261,56,56
+Egyptian Mau,259,56,56
+Maine Coon,262,57,56
+Persian,262,57,56
+Ragdoll,260,56,56
+Russian Blue,262,57,56
+Siamese,260,56,56
+Sphynx,262,56,56
+Tuxedo,262,56,56

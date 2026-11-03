@@ -1,0 +1,13 @@
+{
+  "batch_size": 1,
+  "includes": "Pillow decode/EXIF/RGB/resize + warm Keras inference",
+  "median_ms": 39.38843749983789,
+  "model_bytes": 9861006,
+  "model_load_seconds": 2.0523590829998284,
+  "p95_ms": 40.89803314986966,
+  "samples": 50,
+  "scope": "One local CPU session; not a service or cold-start benchmark",
+  "tensorflow_interop_threads": 1,
+  "tensorflow_intraop_threads": 6,
+  "warmup_calls": 5
+}

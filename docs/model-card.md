@@ -1,41 +1,43 @@
-# Model card · Cat Vision baseline recipe
+# Model card · Cat Vision's first measured model
 
-## Status
+## Status and intended use
 
-This is a model **recipe and evaluation pipeline**. No trained model or verified held-out breed-classification result is released. The historical notebook's 88.16% training accuracy is not evidence of performance on new photos.
+A model was trained and evaluated on the checksum-pinned Gano v3 collection. The selected recipe is **frozen-horizontal-flip**. This is a hobby/portfolio classifier for the collection's visual labels. No public downloadable weight release or hosted prediction app is included yet; training commands reproduce the model locally.
 
-## Intended use
+Visual resemblance is not ancestry. Tuxedo is a coat pattern retained from the source taxonomy. Results describe these 15 source-provided labels, not biological breed verification.
 
-Personal learning, portfolio discussion, and exploratory breed-image classification. Input is a photo; output is a ranked list from the breed labels in the training manifest. The original dataset contained 15 labels, but the pipeline supports a discovered label set.
+## Model and training data
 
-## Model and data
+- ImageNet-pretrained MobileNetV2 with dropout 0.3 and a softmax head.
+- Inputs: EXIF-aware RGB images, resized to 224×224; 0–255 pixels are normalized to -1–1 inside the saved model.
+- Source: [Gano Cat Breed Image Collection](https://www.kaggle.com/datasets/shawngano/gano-cat-breed-image-collection), version 3; attribution and stated collection terms are in the [source record](results/gano-v3/source.json).
+- Audit: 5,625 decoded files, 52 redundant exact copies removed, 29 additional similarity pairs reviewed. Related-photo and filename-ID groups stay within one partition.
+- Retained images: 3,896 training, 841 validation, 836 test across 15 labels.
+- Within-run selection: lowest validation loss. Across-run selection: highest validation macro F1 from three planned recipes, before test predictions.
 
-- ImageNet-pretrained MobileNetV2, frozen feature extractor with a small dropout/softmax head.
-- Inputs: EXIF-aware RGB images resized to 224×224, raw 0–255 values. Normalization to -1–1 is embedded in the model.
-- Training source: user-supplied Gano collection, subject to its own terms and provenance.
-- Data split: seeded, stratified, approximately 70/15/15 per class after exact deduplication.
-- Model selection: lowest validation loss. Final evaluation: saved checkpoint on the held-out test subset.
+## Measured performance
 
-## Evaluation to fill after a real run
-
-| Field | Status |
+| Metric | Selected model on the 836-image test split |
 | --- | --- |
-| Dataset version and audited counts | Pending |
-| Manifest fingerprint and code revision | Pending |
-| Test accuracy / macro F1 / top-3 | Not measured |
-| Per-class metrics and confusion matrix | Not measured |
-| Majority-class comparison | Not measured |
-| Calibration and out-of-distribution evaluation | Not implemented |
-| Hardware, inference latency and training cost | Not benchmarked |
+| Accuracy | 75.4% |
+| 95% accuracy interval | 72.5%–78.0% |
+| Macro F1 | 0.751 |
+| 95% macro F1 interval | 0.722–0.777 |
+| Top-3 accuracy | 93.7% |
+| Training-majority baseline accuracy | 6.7% |
 
-## Limitations
+Intervals use 2,000 class-stratified group-bootstrap samples and describe held-out sampling uncertainty only. This is a single-seed study. Full per-label scores, confusion plots, validation comparison, checkpoint fingerprints, environment and timing are in the [experiment report](results/gano-v3/README.md).
 
-Visual resemblance is not ancestry. Mixed-breed cats, unknown breeds, kittens, unusual poses, poor lighting and backgrounds may produce misleading predictions. The model has no explicit unknown or non-cat class and does not localize a cat in the image. It returns a known class even when the image is unrelated.
+The original 88.16% notebook figure was training accuracy with no independent test partition; it is not a comparison baseline for this score.
 
-Softmax scores are not calibrated estimates. Do not interpret a score as certainty, breed purity, or a biological fact. Do not use predictions for health, care, breeding, adoption eligibility, or commercial pedigree claims.
+## Limits and unsuitable uses
 
-Exact deduplication does not remove near-duplicates or same-animal overlap. Source and breed labels may be noisy; backgrounds and watermarks can be shortcuts. Breed balance alone does not establish representativeness across age, geography, image source or capture conditions. Document those gaps when reporting performance.
+Mixed-breed cats, unknown breeds, kittens, unusual poses, poor lighting and backgrounds can produce misleading predictions. There is no unknown/non-cat class or cat-localization stage. An unrelated image will still receive one of the known labels. Softmax scores are uncalibrated and do not establish certainty or breed purity.
 
-## Release checklist
+The collection combines different sources and possibly noisy advertiser labels. Exact and reviewed visual deduplication do not establish complete animal-identity separation. Oxford/Google images lack reliable animal identifiers, and external/pretraining overlap has not been exhaustively audited. Source-specific backgrounds and watermarks may act as shortcuts. No independent phone-photo, unknown-breed or non-cat benchmark has been completed.
 
-Before distributing a model: complete the data and leakage audit, measure a fixed holdout, fill this card with evidence, verify distribution rights for weights and data artifacts, and document the full inference bundle. Only load model artifacts from trusted sources.
+Do not use predictions for health, care, breeding, adoption eligibility or pedigree decisions. A high score within this curated collection is not a deployment-readiness claim.
+
+## Artifacts and future release
+
+The local run bundle includes the checkpoint, classes, configuration, grouped manifest, hashes, environment and metrics. Public evidence excludes raw dataset photographs and weight files. Confirm artifact distribution terms, include this card, and provide the full inference bundle before a future model release. Load only trusted artifacts.

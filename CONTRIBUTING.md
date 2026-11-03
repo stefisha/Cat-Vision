@@ -4,7 +4,7 @@ Cat Vision is a small hobby project with an emphasis on readable experiments. Fo
 
 ## Local setup
 
-Use Python 3.11. Install `.[ml,dev]` in a virtual environment or use `uv sync --frozen --extra ml --extra dev`. Run `ruff check .`, `ruff format --check .`, and `pytest -q` before opening a pull request. CI runs the same checks using generated image fixtures; Kaggle access is never required.
+Use Python 3.11. Install `.[ml,report,dev]` in a virtual environment or use `uv sync --frozen --extra ml --extra report --extra dev`. Run `ruff check .`, `ruff format --check .`, and `pytest -q` before opening a pull request. CI runs the same checks using generated image fixtures; Kaggle access is never required.
 
 ## Changes to ML behavior
 

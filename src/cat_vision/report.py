@@ -94,15 +94,13 @@ def make_report(
     for i, name in enumerate(ordered):
         support = metrics["classification_report"][name]["support"]
         axis.text(
-            min(recalls[i] + 0.015, 0.96),
+            recalls[i] + 0.015,
             i,
             f"{recalls[i]:.1%} · n={int(support)}",
             va="center",
             fontsize=9,
         )
-    axis.set(
-        xlim=(0, 1.24), xlabel="Recall", title=f"{split.title()} recall by source-provided label"
-    )
+    axis.set(xlim=(0, 1), xlabel="Recall", title=f"{split.title()} recall by source-provided label")
     figure.savefig(output / "per-label-recall.png", dpi=150, bbox_inches="tight")
     plt.close(figure)
 

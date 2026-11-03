@@ -1,0 +1,14 @@
+{
+  "google": {
+    "accuracy": 1.0,
+    "samples": 4
+  },
+  "oxford": {
+    "accuracy": 0.8314606741573034,
+    "samples": 356
+  },
+  "petfinder": {
+    "accuracy": 0.6932773109243697,
+    "samples": 476
+  }
+}
