@@ -1,0 +1,5 @@
+# Keep large, reproducible evidence available without overwhelming the default PR diff.
+docs/results/gano-v3/manifest.json linguist-generated=true
+docs/results/gano-v3/test_predictions.json linguist-generated=true
+docs/results/gano-v3/candidates/*/history.json linguist-generated=true
+docs/results/gano-v3/candidates/*/history.csv linguist-generated=true
