@@ -69,6 +69,41 @@ def test_full_run_roundtrip_and_metadata_guards(image_root, tmp_path, monkeypatc
     dirty_provenance = json.loads((dirty_run / "provenance.json").read_text())
     assert dirty_provenance["git_revision"] == revision
     assert dirty_provenance["git_dirty"] is True
+    validation = evaluate(image_root, run, split="validation")
+    assert validation["split"] == "validation"
+    for key in ("model_sha256", "config_sha256", "manifest_sha256"):
+        assert validation[key] == provenance[key]
+    assert validation["samples"] == 6
+    assert (run / "validation_metrics.json").exists()
+    assert not (run / "metrics.json").exists()
+    with pytest.raises(ValueError, match="weights initialization"):
+        train(
+            image_root,
+            manifest,
+            checkout / "wrong-weights",
+            dict(config, fine_tune_layers=20, weights="imagenet"),
+            initial_run=run,
+        )
+    assert not (checkout / "wrong-weights").exists()
+    fine_run = checkout / "experiments/fine-tuned"
+    train(
+        image_root,
+        manifest,
+        fine_run,
+        dict(config, epochs=1, fine_tune_layers=20, learning_rate=1e-5),
+        initial_run=run,
+    )
+    fine_provenance = json.loads((fine_run / "provenance.json").read_text())
+    assert fine_provenance["initial_model_sha256"] == provenance["model_sha256"]
+    assert fine_provenance["trainable_parameters"] > provenance["trainable_parameters"]
+    fine_model, _, _ = load_run(fine_run)
+    backbone = next(layer for layer in fine_model.layers if isinstance(layer, tf.keras.Model))
+    assert any(layer.trainable for layer in backbone.layers)
+    assert all(
+        not layer.trainable
+        for layer in backbone.layers
+        if isinstance(layer, tf.keras.layers.BatchNormalization)
+    )
     metrics = evaluate(image_root, run)
     assert metrics["samples"] == 6
     assert np.asarray(metrics["confusion_matrix"]).sum() == 6

@@ -1,59 +1,113 @@
 # Training and experiment protocol
 
-## Baseline configuration
+The first measured study follows the [committed plan](experiment-plan.md), recorded before training. Its [results and evidence](results/gano-v3/README.md) separate validation-based selection from final test measurement.
 
-`--config` is required so installed CLI runs never depend on an implicit path in the current working directory. Use an absolute path when invoking training from another directory.
+## Reproduce the three recipes
 
-`configs/baseline.json` is the initial recipe: seed 42, 224×224 RGB images, batches of 32, Adam at 0.001, a maximum of 20 epochs, and patience 4. Training uses sparse categorical cross-entropy. A frozen ImageNet MobileNetV2 backbone feeds dropout 0.3 and a softmax classifier. Horizontal flips apply during training only.
+Install `.[ml,report,dev]`, fetch the checksum-pinned dataset, and use the committed grouped manifest. Seed 42, RGB 224×224, dropout 0.3 and batch size 32 apply to all three runs.
 
-Validation loss selects the best checkpoint and drives early stopping. The test split is only used by the explicit evaluation command. There is no automatic fine-tuning stage; start with an understandable frozen-feature baseline.
+```bash
+cat-vision train \
+  --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
+  --manifest docs/results/gano-v3/manifest.json \
+  --config configs/frozen-no-augmentation.json \
+  --run-dir runs/gano-v3/frozen-no-augmentation
 
-`weights: null` avoids a pretrained download for tests. The backbone remains frozen in this mode: it is a plumbing check, **not a model-training recipe**. Use `"imagenet"` for the real baseline.
+cat-vision train \
+  --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
+  --manifest docs/results/gano-v3/manifest.json \
+  --config configs/frozen-horizontal-flip.json \
+  --run-dir runs/gano-v3/frozen-horizontal-flip
+
+cat-vision train \
+  --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
+  --manifest docs/results/gano-v3/manifest.json \
+  --config configs/partial-fine-tuning.json \
+  --initial-run runs/gano-v3/frozen-no-augmentation \
+  --run-dir runs/gano-v3/partial-fine-tuning
+```
+
+The two frozen runs use Adam 0.001, max 20 epochs and patience 4. The fine-tuning run starts from the no-augmentation checkpoint and trains eligible layers in the final 20 backbone layers at Adam 0.00001, max 5 epochs and patience 2. BatchNorm layers stay frozen and the backbone is called in inference mode. Image size, augmentation, labels and the exact manifest must match the parent run. The parent checkpoint hash is recorded.
+
+`--config` is required; use absolute paths when running outside the checkout. `weights: null` supports no-download tests with a random frozen backbone; it is not a useful real-model recipe.
+
+## Selection without test feedback
+
+```bash
+# Run separately for each candidate directory:
+cat-vision evaluate \
+  --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
+  --run-dir runs/gano-v3/frozen-no-augmentation \
+  --split validation
+```
+
+After evaluating all three candidates on validation, freeze the decision:
+
+```bash
+cat-vision select \
+  --run-dir runs/gano-v3/frozen-no-augmentation \
+  --run-dir runs/gano-v3/frozen-horizontal-flip \
+  --run-dir runs/gano-v3/partial-fine-tuning \
+  --output runs/gano-v3/selection.json
+```
+
+Within a recipe, lowest validation loss selects the checkpoint. Compare the three saved checkpoints by validation macro F1; ties use lower validation log loss, then the simpler frozen model. Evaluation outputs bind scores to model, configuration and manifest SHA-256 values. Selection verifies all three fingerprints and the saved class mapping before ranking candidates. Legacy metric files without these identities must be regenerated with `evaluate --split validation`. Record the choice and checkpoint hashes before evaluating the selected run on test. The [selection record](results/gano-v3/selection.json) preserves this decision.
+
+Evaluation defaults to `--split test`. The test partition is never used by `fit`, and unselected candidates were not evaluated on it in this study. This is one seed and three planned recipes, not a search for the highest test score.
+
+## Visual reports
+
+```bash
+cat-vision report --run-dir runs/gano-v3/SELECTED_RECIPE
+
+# Optional, local-only photo gallery:
+cat-vision report \
+  --run-dir runs/gano-v3/SELECTED_RECIPE \
+  --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
+  --include-images \
+  --output-dir runs/gano-v3/local-photo-report
+```
+
+Replace `SELECTED_RECIPE` with the selection record's name. The report includes learning curves, a row-normalized confusion heatmap with counts, per-label recall, a reliability diagram, a metrics table, and up to twelve of the most confidently incorrect predictions. The HTML embeds its figures and can be opened offline. Individual PNGs are also saved for use in documentation.
+
+Dataset photos are omitted by default. `--include-images` embeds local thumbnails into the HTML; consider source-image rights before sharing that file. Neither mode uploads images anywhere. Error selection deliberately highlights confident mistakes and is not a representative sample of all images.
 
 ## Run bundle
 
 | File | Purpose |
 | --- | --- |
-| `model.keras` | Best validation-loss checkpoint, including pixel normalization |
-| `classes.json` | Ordered labels; output column `i` corresponds to label `i` |
-| `config.json` | Training settings |
-| `manifest.json` | Dataset membership, hashes, split policy, exclusions |
-| `provenance.json` | Manifest/config/checkpoint fingerprints, completion status, Python/packages, Git revision and dirty flag, platform/devices, duration, best epoch |
-| `history.csv`, `history.json` | Training and validation loss/accuracy over epochs |
-| `metrics.json` | Held-out metrics and confusion matrix after evaluation |
-| `test_predictions.json` | Test image path, actual label, prediction and class scores |
+| `model.keras` | Best validation-loss checkpoint with pixel normalization |
+| `classes.json`, `config.json` | Output label order and exact training settings |
+| `manifest.json` | Image hashes, audited groups, split membership and exclusions |
+| `provenance.json` | Data/config/checkpoint hashes, source Git state, environment, hardware and timing; parent hash for fine-tuning |
+| `history.csv`, `history.json` | Per-epoch training/validation loss and accuracy |
+| `validation_metrics.json`, `validation_predictions.json` | Candidate selection evidence |
+| `metrics.json`, `test_predictions.json` | Selected model's held-out evidence |
+| `test-report/index.html`, `*.png` | Regenerable standalone report and figures |
 
-Keep the entire bundle together. The classifier alone cannot communicate label names or EXIF/resize semantics. Artifact directories and raw data are ignored by Git. For a future release, attach the model bundle only after reviewing distribution terms, and publish the data manifest and measured results with it.
+Keep bundles intact. Fingerprints detect accidental mixing of configurations, labels or checkpoints; they do not authenticate an untrusted artifact. Model files and raw images are ignored by Git. Training is deterministic where supported, but hardware/runtime differences can change results. Timing is machine-specific; recorded training duration excludes Python/TensorFlow import, final evaluation and report rendering.
 
-## Measurement protocol
+## Metrics and uncertainty
 
-1. Audit the data and freeze a manifest. Commit the code used for the run.
-2. Train the baseline. Inspect loss curves for underfitting or overfitting using training and validation data.
-3. Record one proposed change and why it might help. Compare runs on the **same validation split**.
-4. Select the final configuration using validation evidence. Evaluate the test partition after selection.
-5. Report accuracy, macro F1, per-breed precision/recall, confusion matrix, and training-majority baseline. Include dataset size, exclusions, class order, split fingerprint, revision, environment and hardware.
-6. Inspect representative errors, near-duplicates and out-of-distribution photos. Describe limitations alongside successes.
+Report accuracy, macro F1, top-3 accuracy, per-label precision/recall/F1/support, log loss, and the training-majority baseline. A confusion matrix uses actual labels in rows and predictions in columns. Macro F1 weights each label equally. Top-3 is meaningful here with 15 labels; with <=3 labels it is necessarily 100%.
 
-Top-3 accuracy includes up to three labels. For a two- or three-class dataset, it is necessarily 100% and is not informative. Softmax scores are rankings, not calibrated confidence.
+The 95% intervals use 2,000 seeded class-stratified group-bootstrap samples. All images from a sampled audited group move together. Intervals describe sampling variation within the observed held-out groups; they do not include training-seed variation, missed identity overlap, label noise or distribution shift.
 
-## Results ledger
+The reliability diagram evaluates uncalibrated softmax scores. No calibration model, unknown-breed detector or non-cat rejection mechanism has been trained.
 
-| Experiment | Evidence | Result | Interpretation |
-| --- | --- | --- | --- |
-| Original Colab notebook | Saved notebook training log | 88.16% training accuracy | No validation/test split; not a generalization estimate |
-| Refactored pipeline smoke test | Synthetic generated images, two epochs, no pretrained weights | See CI / verification notes | Tests execution and artifact contracts only |
-| Real-data frozen-backbone baseline | Pending dataset audit and execution | **Not measured** | No portfolio performance claim yet |
+## Historical evidence
 
-When adding a real run, replace pending entries with measured values and a link to a reproducible run record. Do not promote synthetic smoke-test accuracy as cat recognition performance.
+The original notebook reached 88.16% **training** accuracy without a held-out split. It used a different classification head and data handling, so it is not directly comparable with this study's held-out score. Synthetic tests verify software contracts; they provide no evidence of breed-classification quality.
 
-## A useful experiment note
 
-Copy these fields into a new note under `docs/results/` when a real run is complete:
+## Repeat the CPU inference benchmark
 
-- Question and hypothesis
-- Git revision; clean/dirty state; hardware; wall-clock duration
-- Manifest SHA-256; source dataset version; counts per class and split; exclusions
-- Configuration and environment lock revision
-- Validation selection rationale and previous experiments considered
-- Held-out metrics and baseline; confusion matrix and representative errors
-- Leakage audit, limitations, and next experiment
+```bash
+python scripts/benchmark_inference.py \
+  --run-dir runs/gano-v3/frozen-horizontal-flip \
+  --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
+  --samples 50 --warmups 5 --intra-threads 6 --inter-threads 1 \
+  --output runs/gano-v3/runtime-repeat.json
+```
+
+The script sets TensorFlow thread counts explicitly before model initialization and uses evenly spaced validation images. It refuses to overwrite an existing measurement. Wall-clock results vary by hardware and current load; the historical `runtime.json` is retained as its original measurement. Historical training provenance does not record thread counts, so the explicit 6/1 configuration is attributed to the inference benchmark only.

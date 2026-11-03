@@ -9,7 +9,13 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix, f1_score
+from sklearn.metrics import (
+    accuracy_score,
+    classification_report,
+    confusion_matrix,
+    f1_score,
+    log_loss,
+)
 
 from cat_vision.data import digest, fingerprint, load_manifest, read_image, write_json
 from cat_vision.model import build_model
@@ -45,7 +51,9 @@ def dataset(manifest: dict, root: Path, split: str, size: int, batch_size: int, 
     return result.map(decode, num_parallel_calls=1).batch(batch_size).prefetch(1)
 
 
-def train(root: Path, manifest_path: Path, run: Path, config: dict) -> None:
+def train(
+    root: Path, manifest_path: Path, run: Path, config: dict, initial_run: Path | None = None
+) -> None:
     expected = {
         "seed",
         "image_size",
@@ -55,8 +63,14 @@ def train(root: Path, manifest_path: Path, run: Path, config: dict) -> None:
         "patience",
         "weights",
     }
-    if set(config) != expected:
-        raise ValueError(f"Config must contain exactly: {sorted(expected)}")
+    optional = {"augmentation", "fine_tune_layers"}
+    if not expected.issubset(config) or set(config) - expected - optional:
+        missing = sorted(expected - set(config))
+        unknown = sorted(set(config) - expected - optional)
+        raise ValueError(
+            f"Config required keys: {sorted(expected)}; optional keys: {sorted(optional)}; "
+            f"missing keys: {missing}; unknown keys: {unknown}"
+        )
     for key in ("seed", "image_size", "batch_size", "epochs", "patience"):
         if type(config[key]) is not int or config[key] < (0 if key == "seed" else 1):
             raise ValueError(f"Invalid {key}")
@@ -70,6 +84,13 @@ def train(root: Path, manifest_path: Path, run: Path, config: dict) -> None:
         raise ValueError("Image size must be >=32 and learning rate positive")
     if config["weights"] not in ("imagenet", None):
         raise ValueError("weights must be 'imagenet' or null (smoke testing only)")
+    if config.get("augmentation", "horizontal") not in ("none", "horizontal"):
+        raise ValueError("augmentation must be 'none' or 'horizontal'")
+    fine_tune = config.get("fine_tune_layers", 0)
+    if type(fine_tune) is not int or fine_tune < 0:
+        raise ValueError("fine_tune_layers must be a non-negative integer")
+    if bool(fine_tune) != (initial_run is not None):
+        raise ValueError("Fine-tuning requires both fine_tune_layers and --initial-run")
     manifest = load_manifest(manifest_path, root)
     if run.exists():
         raise ValueError(f"Run directory already exists: {run}")
@@ -94,6 +115,35 @@ def train(root: Path, manifest_path: Path, run: Path, config: dict) -> None:
     started = time.perf_counter()
     tf.keras.utils.set_random_seed(config["seed"])
     tf.config.experimental.enable_op_determinism()
+    initial_sha = None
+    if initial_run:
+        model, parent_config, parent_classes = load_run(initial_run)
+        parent_manifest = json.loads((initial_run / "manifest.json").read_text())
+        if fingerprint(parent_manifest) != fingerprint(manifest):
+            raise ValueError("Fine-tuning must use the same dataset manifest as its parent run")
+        if parent_classes != manifest["classes"] or any(
+            parent_config.get(key, "horizontal") != config.get(key, "horizontal")
+            for key in ("image_size", "augmentation")
+        ):
+            raise ValueError("Fine-tuning image size, augmentation and class mapping must match")
+        if parent_config["weights"] != config["weights"]:
+            raise ValueError("Fine-tuning weights initialization must match the inherited parent")
+        backbone = next(layer for layer in model.layers if isinstance(layer, tf.keras.Model))
+        if fine_tune > len(backbone.layers):
+            raise ValueError("fine_tune_layers exceeds backbone layer count")
+        backbone.trainable = True
+        for i, layer in enumerate(backbone.layers):
+            layer.trainable = i >= len(backbone.layers) - fine_tune and not isinstance(
+                layer, tf.keras.layers.BatchNormalization
+            )
+        initial_sha = digest(initial_run / "model.keras")
+    else:
+        model = build_model(
+            len(manifest["classes"]),
+            config["image_size"],
+            config["weights"],
+            config.get("augmentation", "horizontal"),
+        )
     run.mkdir(parents=True)
     write_json(run / "config.json", config)
     write_json(run / "manifest.json", manifest)
@@ -103,6 +153,8 @@ def train(root: Path, manifest_path: Path, run: Path, config: dict) -> None:
         {
             "manifest_sha256": fingerprint(manifest),
             "config_sha256": fingerprint(config),
+            "initial_model_sha256": initial_sha,
+            "trainable_parameters": int(sum(np.prod(w.shape) for w in model.trainable_weights)),
             "git_revision": revision,
             "git_dirty": dirty,
             "python": platform.python_version(),
@@ -115,7 +167,6 @@ def train(root: Path, manifest_path: Path, run: Path, config: dict) -> None:
             },
         },
     )
-    model = build_model(len(manifest["classes"]), config["image_size"], config["weights"])
     model.compile(
         optimizer=tf.keras.optimizers.Adam(config["learning_rate"]),
         loss="sparse_categorical_crossentropy",
@@ -172,7 +223,7 @@ def load_run(run: Path):
         raise ValueError("Class mapping differs from the training manifest")
     if digest(run / "model.keras") != provenance["model_sha256"]:
         raise ValueError("Model checkpoint does not match recorded fingerprint")
-    model = tf.keras.models.load_model(run / "model.keras")
+    model = tf.keras.models.load_model(run / "model.keras", compile=False)
     if model.output_shape[-1] != len(classes) or model.input_shape[1:3] != (
         config["image_size"],
         config["image_size"],
@@ -181,7 +232,9 @@ def load_run(run: Path):
     return model, config, classes
 
 
-def evaluate(root: Path, run: Path) -> dict:
+def evaluate(root: Path, run: Path, split: str = "test") -> dict:
+    if split not in ("test", "validation"):
+        raise ValueError("Evaluation split must be test or validation")
     manifest = load_manifest(run / "manifest.json", root)
     provenance = json.loads((run / "provenance.json").read_text())
     if fingerprint(manifest) != provenance["manifest_sha256"]:
@@ -189,9 +242,9 @@ def evaluate(root: Path, run: Path) -> dict:
     model, config, classes = load_run(run)
     if classes != manifest["classes"]:
         raise ValueError("Class mapping differs from the training manifest")
-    rows = [row for row in manifest["records"] if row["split"] == "test"]
+    rows = [row for row in manifest["records"] if row["split"] == split]
     probabilities = model.predict(
-        dataset(manifest, root, "test", config["image_size"], config["batch_size"]), verbose=0
+        dataset(manifest, root, split, config["image_size"], config["batch_size"]), verbose=0
     )
     predictions = probabilities.argmax(axis=1)
     targets = np.array([classes.index(row["label"]) for row in rows])
@@ -202,10 +255,14 @@ def evaluate(root: Path, run: Path) -> dict:
         minlength=len(classes),
     )
     metrics = {
-        "split": "test",
+        "split": split,
         "samples": len(rows),
+        "model_sha256": provenance["model_sha256"],
+        "config_sha256": provenance["config_sha256"],
+        "manifest_sha256": provenance["manifest_sha256"],
         "classes": classes,
         "accuracy": float(accuracy_score(targets, predictions)),
+        "log_loss": float(log_loss(targets, probabilities, labels=labels)),
         "macro_f1": float(
             f1_score(targets, predictions, labels=labels, average="macro", zero_division=0)
         ),
@@ -221,9 +278,12 @@ def evaluate(root: Path, run: Path) -> dict:
         ),
         "confusion_matrix": confusion_matrix(targets, predictions, labels=labels).tolist(),
     }
-    write_json(run / "metrics.json", metrics)
+    from cat_vision.metrics import uncertainty_intervals
+
+    metrics["uncertainty"] = uncertainty_intervals(targets, predictions, rows, labels)
+    write_json(run / ("metrics.json" if split == "test" else "validation_metrics.json"), metrics)
     write_json(
-        run / "test_predictions.json",
+        run / f"{split}_predictions.json",
         [
             {
                 "path": row["path"],

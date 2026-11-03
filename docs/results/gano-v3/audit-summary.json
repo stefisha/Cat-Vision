@@ -1,0 +1,18 @@
+{
+  "approved_pairs": 28,
+  "audit_sha256": "dbdce6791fded369e4ce698807e99714b4dfd6af2f848d1ba69fceb37ff159d7",
+  "candidate_pairs": 29,
+  "exact_duplicate_groups": 50,
+  "false_positive_pairs": 1,
+  "groups": 5546,
+  "manifest_sha256": "4e137af8a4f0a9e4a0c121602719f51bf71cc9d57f5263848e407e55f06b2abb",
+  "multi_image_groups": 76,
+  "redundant_exact_files": 52,
+  "rejected_images": 0,
+  "source_counts": {
+    "google": 47,
+    "oxford": 2374,
+    "petfinder": 3204
+  },
+  "valid_images": 5625
+}

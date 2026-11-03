@@ -1,0 +1,44 @@
+{
+  "audit_fingerprint_unchanged": true,
+  "evaluation_code_revision": "9d9c4fbcaf91788ef90cfe01faedb74919ccbcec",
+  "evaluations": [
+    {
+      "bound_metrics_sha256": "fd6662dcc7f9ae92888134dec7f7293e4d8948d45b8f4478f90bb02375a2074f",
+      "numeric_metrics_unchanged": true,
+      "original_metrics_sha256": "9f637215a0e73a13228f4328ba418f74b6ce5fd5fc58e3fd48e6bb868cb09b88",
+      "predictions_byte_identical": true,
+      "recipe": "frozen-no-augmentation",
+      "split": "validation"
+    },
+    {
+      "bound_metrics_sha256": "ee8bd844fda79405ed11f84018edca8b0ad60ddaafc7bb36fe33594c17ce35f2",
+      "numeric_metrics_unchanged": true,
+      "original_metrics_sha256": "5b6e3bc0b72cf13174af682c6c75b948f174ffd103d4b523cf65feceda3ef63a",
+      "predictions_byte_identical": true,
+      "recipe": "frozen-horizontal-flip",
+      "split": "validation"
+    },
+    {
+      "bound_metrics_sha256": "497bd0b6fbcd9e8c35cd989a03bead9b32f780ca1e485123bb06c7949757b744",
+      "numeric_metrics_unchanged": true,
+      "original_metrics_sha256": "1ddf6561daf1855d1df8991fd18797a1dcc3038d55d995822fe1319d2b38a061",
+      "predictions_byte_identical": true,
+      "recipe": "partial-fine-tuning",
+      "split": "validation"
+    },
+    {
+      "bound_metrics_sha256": "7cd0ace5582c0c3107e864ef00cb23142f048be890e1e4dd69363a98000ff2b7",
+      "numeric_metrics_unchanged": true,
+      "original_metrics_sha256": "1d4f0f8044dc771707becf2e61b4677f0318daff7f85973719575cec2c480048",
+      "predictions_byte_identical": true,
+      "recipe": "frozen-horizontal-flip",
+      "split": "test"
+    }
+  ],
+  "manifest_unchanged": true,
+  "notes": "Unchanged checkpoints re-evaluated to bind metrics to model/config/manifest. Original pre-test choice and pre-binding metrics are preserved. No retraining or new model selection was performed.",
+  "original_selection_sha256": "3ddc707cc21abdf82c5b2228c033d08a84ac0df7a3bdacee0d7e7db9833bd3f6",
+  "original_selection_unchanged": true,
+  "selected_recipe_unchanged": true,
+  "verified_at": "2026-11-03T00:42:53.478200+00:00"
+}

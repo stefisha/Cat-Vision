@@ -16,7 +16,7 @@ jobs:
           cache: pip
           cache-dependency-path: uv.lock
       - run: python -m pip install uv==0.13.6
-      - run: uv sync --frozen --extra dev
+      - run: uv sync --frozen --extra dev --extra report
       - run: uv run --no-sync ruff check .
       - run: uv run --no-sync ruff format --check .
       - run: uv run --no-sync pytest -m 'not ml' -q

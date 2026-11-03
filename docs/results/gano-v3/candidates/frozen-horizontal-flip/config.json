@@ -1,0 +1,10 @@
+{
+  "augmentation": "horizontal",
+  "batch_size": 32,
+  "epochs": 20,
+  "image_size": 224,
+  "learning_rate": 0.001,
+  "patience": 4,
+  "seed": 42,
+  "weights": "imagenet"
+}

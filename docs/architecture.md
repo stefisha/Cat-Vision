@@ -1,50 +1,51 @@
 # Architecture and decisions
 
-## A small pipeline with explicit boundaries
+## Data evidence and model evidence
 
 ```mermaid
 flowchart LR
-    A[Breed folders] --> B[Decode + SHA-256 deduplication]
-    B --> C[Frozen stratified manifest]
-    C --> D[Training images]
-    C --> E[Validation images]
-    C --> F[Held-out test images]
-    D --> G[RGB resize + train-only flip]
-    G --> H[Embedded normalization + frozen MobileNetV2]
-    E --> I[Select checkpoint by validation loss]
-    H --> I
-    I --> J[Model + labels + config + provenance]
-    F --> K[Evaluate saved checkpoint]
-    J --> K
-    J --> L[Predict new photo]
+    A[Pinned source archive] --> B[Decode and content hashes]
+    B --> C[Similarity candidates and filename IDs]
+    C --> D[Reviewed photo groups]
+    D --> E[Frozen group-disjoint manifest]
+    E --> F[Training and validation]
+    F --> G[Three planned recipes]
+    G --> H[Validation-only selection record]
+    H --> I[Selected checkpoint on held-out test]
+    I --> J[Metrics, uncertainty, plots and local error gallery]
 ```
 
-`data.py` owns image decoding and manifest integrity. `model.py` owns the serialized network. `pipeline.py` connects those contracts to training and reporting. `cli.py` parses commands and reports actionable errors. Data preparation works without importing TensorFlow.
+`audit.py` generates inspectable candidate evidence and connected image groups. `data.py` validates bytes and split membership. `model.py` defines the serialized network; `pipeline.py` trains, evaluates and predicts. `metrics.py` estimates held-out sampling uncertainty. `selection.py` freezes a choice from comparable validation results. `report.py` renders scientific plots and offline HTML. `cli.py` exposes these boundaries without importing TensorFlow for data preparation, selection or reporting.
 
-## Why these choices?
+## Key decisions
 
-| Decision | Reason | Tradeoff |
+| Decision | Reason | Boundary |
 | --- | --- | --- |
-| Frozen MobileNetV2 | Small, understandable transfer-learning baseline; continues the original experiment | Fine-tuning may perform better, but must be measured |
-| Global average pooling + dropout + softmax | Fewer head parameters than the original 256-unit dense head | Different model; historical accuracy is not directly comparable |
-| Embedded `Rescaling(1/127.5, offset=-1)` | MobileNetV2 expects pixels scaled from 0–255 to -1–1; the saved model carries normalization | Callers must supply RGB pixels on the 0–255 scale |
-| Shared Pillow RGB/EXIF/resize function | Same image semantics for train, test, and prediction, including GIF first frames | Python-backed decoding prioritizes shared semantics over maximum input throughput |
-| Sorted labels in the manifest | Output index has one persisted meaning | Changing the label set requires a new run |
-| SHA-256 manifest and per-image hashes | Detect accidental dataset drift and exact duplicates | Does not detect visually similar photos or identify the same animal |
-| Per-class seeded split | Every supported class has examples in each partition | Source/animal groups need a future group-aware split |
-| Validation-loss checkpoint | Select a model using validation evidence rather than training accuracy | Validation can still be overused during repeated experimentation |
-| `.keras` run bundle | Straightforward round-trip with Keras 3 | Load only artifacts from a trusted source |
-| Local artifacts and JSON config | Inspectable experiments without a service dependency | No experiment server or distributed execution |
-| TensorFlow 2.21.0 + Python 3.11 baseline | Explicit, tested dependency baseline rather than an unbounded latest install | Periodic dependency updates need CI validation |
+| Frozen ImageNet MobileNetV2 baseline | Small, understandable starting point consistent with the original project | Real performance must be measured |
+| Partial fine-tuning as a separate child run | Preserve the parent baseline and trace inherited weights | Requires the same manifest, label map, image size and augmentation |
+| BatchNorm frozen; backbone called with `training=False` | Preserve pretrained moving statistics during fine-tuning | Other eligible final backbone layers may train |
+| Global average pooling, dropout, softmax head | A modest classifier with few head parameters | Different from the historical 256-unit dense head |
+| Embedded `Rescaling(1/127.5, offset=-1)` | Keep the MobileNetV2 normalization contract with the model | Callers provide RGB pixels on the 0–255 scale |
+| Shared Pillow orientation/RGB/resize path | Same pixel semantics in training and inference | EXIF and resizing live in Python, not the `.keras` graph |
+| Shuffle file paths before decoding | Avoid buffering hundreds of megabytes of image tensors | Python-backed decoding favors clarity over maximum throughput |
+| Reviewed similarity groups | Reduce observable duplicate-photo leakage | Hashes and filename IDs do not establish complete animal identity |
+| Group-disjoint, class-preserving split | Related photos stay in one partition | Exact 70/15/15 proportions may be impossible for large groups |
+| Lowest validation loss within each run | Predefined checkpoint selection | Validation can still be overused across many experiments |
+| Highest validation macro F1 across three recipes | A documented label-balanced selection criterion | One seed and a small comparison, not a broad architecture search |
+| Group-bootstrap intervals | Respect known dependence between related photos | Do not cover missed identities, training seeds or distribution shift |
+| Standalone HTML, photos opt-in | Inspect metrics offline without a service | Embedding images creates a local file that needs source-rights review before sharing |
+| JSON artifacts and local files | Inspectability without a platform dependency | No registry, experiment server or production deployment |
 
-MobileNetV2 normalization follows the [official TensorFlow contract](https://www.tensorflow.org/api_docs/python/tf/keras/applications/MobileNetV2). EXIF correction and resizing happen before the network and are shared Python code; they are not part of the `.keras` graph. The graph embeds augmentation (active in training only) and normalization.
+The preprocessing and fine-tuning choices follow [TensorFlow's MobileNetV2 API](https://www.tensorflow.org/api_docs/python/tf/keras/applications/MobileNetV2) and [transfer-learning guide](https://www.tensorflow.org/guide/keras/transfer_learning).
 
-## Reproducibility boundaries
+## Integrity and reproducibility
 
-The manifest records relative paths, labels, content hashes, and split membership. A run copies it alongside configuration, class order, installed versions, Git revision and working-tree status. Completed runs fingerprint the configuration and checkpoint too; loading a run checks these fingerprints and the label order. Fixed seeds and TensorFlow deterministic operations reduce variability. They do not guarantee identical floating-point results across hardware, TensorFlow builds, or operating systems.
+The manifest records relative paths, labels, image hashes and groups. Training/evaluation rehash the image bytes. A run copies the manifest, settings and ordered classes; completion fingerprints the model and config. Loading verifies those artifacts and model shapes. The source Git revision and dirty flag are captured before any run output is created. Fine-tuning records its initial checkpoint hash.
 
-The canonical environment is in `uv.lock`; a run's provenance records what actually executed. The source Git revision and dirty flag are captured before creating the run directory, so the run’s own outputs cannot change the recorded starting state. A dirty Git tree is recorded explicitly because a revision alone cannot reconstruct uncommitted code. Commit code before collecting portfolio results.
+Selection verifies completed checkpoints, configuration/manifest hashes, saved class mappings and a shared exact manifest. Evaluation metrics carry their own model/config/manifest fingerprints; selection rejects stale, unbound or copied scores. It reads validation metrics only and records their file hashes before writing an immutable selection record. These are guards against accidental artifact mixing, not authentication of untrusted files or a substitute for experimental discipline.
+
+`uv.lock` fixes the resolved environment. Runs record the actual installed versions, Python, platform/devices, duration and source revision. Fixed seeds and deterministic TensorFlow operations reduce variability; floating-point results can still differ across hardware and software builds.
 
 ## Scope
 
-There is no API server, container stack, model registry, or production deployment here. The CLI and run bundles cover the current task. Add infrastructure when an actual deployment needs it, and keep ML evaluation evidence separate from application polish.
+There is no serving API or upload frontend yet. The current milestone is measured ML evidence and usable local inference. Infrastructure should follow a demonstrated deployment need.

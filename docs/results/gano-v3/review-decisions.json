@@ -1,0 +1,234 @@
+[
+  {
+    "left": "Abyssinian/Abyssinian_122.jpg",
+    "left_sha256": "a9e38e201a7aa3943521dbaacf628d276e844540ad87b76cd6e0113be00c09eb",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Abyssinian/Abyssinian_172.jpg",
+    "right_sha256": "8bea81c934c2c99ff73d4bca70d2f5bc9aba9fc4b1df57cb131b44001dc2ffb3",
+    "same_photo": true
+  },
+  {
+    "left": "Abyssinian/Abyssinian_11.jpg",
+    "left_sha256": "03ae2f0a16b85489d90f53e495f4a813f70628f3cf4541943c3e2ad3d7705092",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Abyssinian/Abyssinian_177.jpg",
+    "right_sha256": "31baa0e08f462b9c24c720c530e066f081d2608822eb07ba11919a2318bf2841",
+    "same_photo": true
+  },
+  {
+    "left": "Abyssinian/Abyssinian_24.jpg",
+    "left_sha256": "b1a8b0ad27691d5f996167489ced7cd09c385d66b00e9595c26071d2a7c760b9",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Abyssinian/Abyssinian_56.jpg",
+    "right_sha256": "9a52bb61f893bea36b42f804b08efcaae94e77e77fbf49a6f52e6ed4ebf7f12e",
+    "same_photo": true
+  },
+  {
+    "left": "Abyssinian/Abyssinian_40.jpg",
+    "left_sha256": "902871374981b3482fb60bbe29473622a04eefbbae7fbec77b034be03ee0c6db",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Abyssinian/Abyssinian_63.jpg",
+    "right_sha256": "2276fef97c32b27a22c381ec04995a19f11a6bbb5df8fb552f3e9ad80ecdfe1d",
+    "same_photo": true
+  },
+  {
+    "left": "Abyssinian/Abyssinian_5.jpg",
+    "left_sha256": "705a9f260d270f769f9d4a3257de9cdb4521085169e68c34172d63ce29f777af",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Abyssinian/Abyssinian_87.jpg",
+    "right_sha256": "e396b9b633a4c835822e7eab359bfdec4a622f2d2645fc71faba262f4f791dfc",
+    "same_photo": true
+  },
+  {
+    "left": "Abyssinian/Abyssinian_151.jpg",
+    "left_sha256": "35b14bca9f656d56157152748fb7bbb3be41c07da42eefdeae8f3aa5716f14e7",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Abyssinian/Abyssinian_99.jpg",
+    "right_sha256": "da7abc8c446ee1f3dcc7e730d066cd6e62b861631c92721e56e98fe4847aaad9",
+    "same_photo": true
+  },
+  {
+    "left": "Bengal/Bengal_153.jpg",
+    "left_sha256": "9cd73fd90080763c05f1720a2d8e0b9123a4fd439ea35a2e59db8bac02790482",
+    "note": "Visually distinct photos; similarity-hash false positive.",
+    "right": "Birman/Birman_101.jpg",
+    "right_sha256": "9be011083d77cc051cecde968b2bb24f98781cce23ccb9ce44fb38c365e7eefb",
+    "same_photo": false
+  },
+  {
+    "left": "Birman/Birman_199.jpg",
+    "left_sha256": "de5edd5e48246835ed5067da5080c3ff4acc92e267bd0b541a6b43aa288cb9ca",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Birman/Birman_25.jpg",
+    "right_sha256": "3eaede3d0c475de1c33ef9c3e5ec1ca683b15eaf3ba9eabd2e5257746fb5e477",
+    "same_photo": true
+  },
+  {
+    "left": "Bombay/Bombay_107.jpg",
+    "left_sha256": "a946e91ba3f23e5b9cd918aeceea2068edb0b285ebfa9528231dfcec2a16108f",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Bombay/Bombay_132.jpg",
+    "right_sha256": "a647a9925e245b896cb29715da14a0202e5d8f4a75d519e20e68e60a4f6ea0d4",
+    "same_photo": true
+  },
+  {
+    "left": "Bombay/Bombay_114.jpg",
+    "left_sha256": "5b27b5df42965579a4aa83e7baa3e9795230a075154fcedc06f6e64e4e6948dd",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Bombay/Bombay_139.jpg",
+    "right_sha256": "7810866d127c32f87eb98d1021ec8c5f8d489363850733d5b17256d10afb0ba5",
+    "same_photo": true
+  },
+  {
+    "left": "Bombay/Bombay_136.jpg",
+    "left_sha256": "9e6a854c78b618bbc1d0d8a354b9206abf50422e7b180c73d86ec4b26dd3ba99",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Bombay/Bombay_150.jpg",
+    "right_sha256": "73de3bde43d6474a486a802e0a6836b09b23180f053942f213f5550e306dc225",
+    "same_photo": true
+  },
+  {
+    "left": "Bombay/Bombay_113.jpg",
+    "left_sha256": "0b339444e5b3d4086bd02b7dd0b4199cb69ed688f733d1797cbd48c2ecd6fa23",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Bombay/Bombay_157.jpg",
+    "right_sha256": "82932cd6d2758a07d1a689469d087c784756d6cd5f7ce2e69308144833e4cdf3",
+    "same_photo": true
+  },
+  {
+    "left": "Bombay/Bombay_107.jpg",
+    "left_sha256": "a946e91ba3f23e5b9cd918aeceea2068edb0b285ebfa9528231dfcec2a16108f",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Bombay/Bombay_19.jpg",
+    "right_sha256": "d4776e5debece309101ea79ab4a592d43612f6f38da76f20fe315a7111d4e3c1",
+    "same_photo": true
+  },
+  {
+    "left": "Bombay/Bombay_132.jpg",
+    "left_sha256": "a647a9925e245b896cb29715da14a0202e5d8f4a75d519e20e68e60a4f6ea0d4",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Bombay/Bombay_19.jpg",
+    "right_sha256": "d4776e5debece309101ea79ab4a592d43612f6f38da76f20fe315a7111d4e3c1",
+    "same_photo": true
+  },
+  {
+    "left": "Bombay/Bombay_38.jpg",
+    "left_sha256": "32a7fcbff96ebf48169eb240ac329073ddeed62a84de8acff49543fd7e4046ba",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Bombay/Bombay_57.jpg",
+    "right_sha256": "a1ce4d037705a7c060f682b753b71f730778b742ccd1f986ee8a880fa8d4a063",
+    "same_photo": true
+  },
+  {
+    "left": "Bombay/Bombay_146.jpg",
+    "left_sha256": "f9f6bd0d741283cf8ebdefe69bfaf4c66753f1a9c1668c17beab033f0f455118",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Bombay/Bombay_82.jpg",
+    "right_sha256": "a299f9dd1fa3a97bff966555230edaeddd78f810e44e6e4d8b3740813f4de66b",
+    "same_photo": true
+  },
+  {
+    "left": "Bombay/Bombay_79.jpg",
+    "left_sha256": "af2397c86e30811ae4c643b0ba170447fff5e8c35e6f0f9cb2821c6ddb6d3f4d",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Bombay/Bombay_97.jpg",
+    "right_sha256": "12361b1c8236bed6bba11a285cc0c7d6c60104b52ee5470a1e57c02e75a003f1",
+    "same_photo": true
+  },
+  {
+    "left": "British Shorthair/British_Shorthair_186.jpg",
+    "left_sha256": "f30b9af7a2aa1430933eab36c70ac9c04391885f29a0eff05b1e6cf0b34d9891",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "British Shorthair/British_Shorthair_271.jpg",
+    "right_sha256": "f37aa6d1802e4e65bfbea5cd962ad59a05819e12d0e90f3c09b9d540dfbe2d01",
+    "same_photo": true
+  },
+  {
+    "left": "British Shorthair/British_Shorthair_160.jpg",
+    "left_sha256": "38c3b3a424d8e3aec7074d701348e806f4b61d617209a0166e4ce2584120f53a",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "British Shorthair/British_Shorthair_278.jpg",
+    "right_sha256": "499387599cc84b59d201b2bc621100d4e270b53b948303d045ec72b8719dc3b7",
+    "same_photo": true
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau-32372315_531.jpg",
+    "left_sha256": "912ada91d88c0f24254aa46790991bb5094861578e3a8431bebb1db310130454",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Egyptian Mau/Egyptian_Mau_109.jpg",
+    "right_sha256": "f903dbcd082566e934c12104b3c2f00f8445b79b3f24136e59adf8785427da0c",
+    "same_photo": true
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau--1.jpg",
+    "left_sha256": "f51e68f9b0851c29bc54b7715fe77332fb7304fe3f888c565e4374a4c7fa1e12",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Egyptian Mau/Egyptian_Mau_116.jpg",
+    "right_sha256": "88ca32120bc3d49563b270d56558e31b106b3b1de4898a120bed26e441721290",
+    "same_photo": true
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau--14.jpg",
+    "left_sha256": "c276e3d2cbb520811cc2df64e78453f31a19aa4cacb634b3ddb5e4186c45f27a",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Egyptian Mau/Egyptian_Mau_160.jpg",
+    "right_sha256": "bbd7ee711032226053a71442402cd561acb02610a7aab2d4ddaa5bde1a8a34c9",
+    "same_photo": true
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau_138.jpg",
+    "left_sha256": "cca5bddf79d5b01eff8e53833f29581ced9f4bebc16d5abce9b12d25c5238335",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Egyptian Mau/Egyptian_Mau_219.jpg",
+    "right_sha256": "5f0f335ecf01074e5b02a1ff88ef9a7d52ff1be68fa9c9a8ec6091d85dd8ee2f",
+    "same_photo": true
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau_167.jpg",
+    "left_sha256": "437dbc5ab31ca6fab970f9beba217863d634ac4323930b4ee8cbdb67505158e1",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Egyptian Mau/Egyptian_Mau_3.jpg",
+    "right_sha256": "be1d4bac325a47b6168cc7ac5e35a16b12424569a8661fe1faf06a9393585b9c",
+    "same_photo": true
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau_186.jpg",
+    "left_sha256": "799bfdc14f4958432f1546f2e82785c1ab6e70bc6a2665c5395fb9d5db7107b4",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Egyptian Mau/Egyptian_Mau_6.jpg",
+    "right_sha256": "564bc9c9bfcb417009b26fd87efcab6a1c7635c46646f1fb57ea387679161359",
+    "same_photo": true
+  },
+  {
+    "left": "Egyptian Mau/Egyptian_Mau_139.jpg",
+    "left_sha256": "b45ad5489173d4e189e6d227f9179ba791f3f926fee6b0a6434b0e8ea55940e1",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Egyptian Mau/Egyptian_Mau_7.jpg",
+    "right_sha256": "36395936cff1066df9a6e3b9be32ed5372f1410896a1ef37a85640b6a18ac4c5",
+    "same_photo": true
+  },
+  {
+    "left": "Persian/Persian-28056295_6739.jpg",
+    "left_sha256": "11eab535a2ea09eba710fc914972784bdaba3c7ae5f201432cc6c133b83d4afd",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Persian/Persian-28513962_6502.jpg",
+    "right_sha256": "63b5c0b3bb4463394b6bfb4bfb21ded72e6f09ff2657876aaaba9962bad94d20",
+    "same_photo": true
+  },
+  {
+    "left": "Ragdoll/Ragdoll_160.jpg",
+    "left_sha256": "1f6cdf1e36385665fc3f5a6cbf18a64f68f8b27e7f04ad254942b176559c1ecc",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Ragdoll/Ragdoll_161.jpg",
+    "right_sha256": "086902c1dd4c6722ba6780cf5fb8e17a7ffbccb7e70d3f6111c3de9ff77dfa19",
+    "same_photo": true
+  },
+  {
+    "left": "Siamese/Siamese_196.jpg",
+    "left_sha256": "c5695856540a2914ecbb02a1b76aabe453b43d75e057a790cab5ebd2229283dd",
+    "note": "Visual review: same photograph with resizing/compression/crop differences.",
+    "right": "Siamese/Siamese_203.jpg",
+    "right_sha256": "76655bc6a5bc68cc556ff77dc34f46d98658d3aa435acc032108aa46350bf12f",
+    "same_photo": true
+  }
+]

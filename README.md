@@ -9,23 +9,40 @@
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-79d9d0" alt="Code license: MIT"></a>
 </p>
 
-I like cats. I also like understanding what a model has actually learned. **Cat Vision** brings those interests together: a small, reproducible project that classifies cat photos by breed using MobileNetV2 transfer learning.
+I like cats. I also like understanding what a model has actually learned. **Cat Vision** brings those interests together: a reproducible MobileNetV2 project that classifies cat photos into the Gano collection's 15 labels.
 
-It started as a Colab notebook. The current project adds the engineering needed to make an experiment inspectable: validated data, frozen splits, consistent preprocessing, traceable runs, held-out evaluation, and automated tests. The goal is a thoughtful portfolio project with a modest footprint.
+It started as a Colab notebook. It now includes audited data groups, traceable training runs, a validation-based experiment comparison, and measured held-out results. **Tuxedo is a coat pattern, not a breed**; the source taxonomy is retained and its limits are explicit.
 
-> **Results status:** the original notebook recorded **88.16% training accuracy** across 15 breeds and 5,624 images. It had no held-out evaluation. The refactored pipeline has been tested on synthetic images; a real-data baseline has **not yet been measured**. No trained breed classifier or dataset is distributed here.
+## Measured results
+
+The selected recipe, **frozen-horizontal-flip**, was chosen using validation data before evaluating its checkpoint on **836 held-out images**.
+
+| Test metric | Result |
+| --- | --- |
+| Accuracy | **75.4%** |
+| Macro F1 | **0.751** |
+| Top-3 accuracy | 93.7% |
+| Training-majority baseline accuracy | 6.7% |
+| 95% accuracy interval | 72.5%–78.0% |
+
+[Read the complete experiment](docs/results/gano-v3/README.md) for validation comparisons, per-label metrics, data audit, uncertainty, hardware, hashes and limitations.
+
+![Selected model test confusion matrix](docs/results/gano-v3/figures/confusion-matrix.png)
+
+This is one seed on an audited within-collection split. It does not establish performance on arbitrary phone photos or unfamiliar breeds. The original notebook's **88.16% training accuracy** had no holdout and is not directly comparable with these test results. Dataset images and trained weights are not distributed in the repository.
 
 ## What is here
 
-- **Data integrity:** decode checks, byte-level deduplication, conflicting-label detection, SHA-256 image fingerprints, and a persisted stratified split.
-- **Training:** a frozen ImageNet MobileNetV2 backbone, train-only horizontal flips, embedded pixel normalization, validation-loss early stopping, and best-checkpoint saving.
-- **Evaluation:** held-out accuracy, macro F1, top-3 accuracy, per-breed metrics, confusion matrix, per-image scores, and a training-majority baseline.
-- **Reproducibility:** one class mapping, seeded runs, configuration snapshots, dependency lockfile, package versions, and Git provenance.
-- **Quality:** a packaged CLI, data contract tests, a no-download TensorFlow integration test, and GitHub Actions.
+- **Data audit:** decode checks, SHA-256 deduplication, reviewed perceptual-similarity candidates, filename-ID groups and persisted group-disjoint splits.
+- **Training:** frozen or partially fine-tuned MobileNetV2, optional horizontal flips, embedded normalization, validation-loss checkpoint selection and parent-checkpoint tracing.
+- **Evaluation:** accuracy, macro F1, top-3, per-label scores, confusion matrix, log loss, majority baseline and group-bootstrap uncertainty intervals.
+- **Reports:** standalone offline HTML, scientific plots, score-reliability diagnostics and an optional local photo error gallery.
+- **Reproducibility:** pinned source archive, committed manifest/decisions/configs, model/data hashes, locked dependencies and Git/environment provenance.
+- **Quality:** packaged CLI, synthetic regression tests, and Linux CI with no dataset credentials or pretrained download.
 
 ## Quick start
 
-Use **Python 3.11** for the tested environment. Python 3.12 is allowed by the package; it is not in the CI matrix yet. The target platforms are Linux x86-64 and Apple Silicon macOS 12+. Intel macOS is not supported by this TensorFlow pin; use Linux or Colab there. CPU execution works; a GPU is optional. For accelerator setup, follow the [TensorFlow installation guide](https://www.tensorflow.org/install/pip).
+Use **Python 3.11** for the tested environment. Python 3.12 is allowed but is not yet in CI. Targets are Linux x86-64 and Apple Silicon macOS 12+. Intel macOS is not supported by this TensorFlow pin; use Linux or Colab. A GPU is optional; the measured study ran on CPU. See [TensorFlow installation](https://www.tensorflow.org/install/pip) for accelerator setup.
 
 ```bash
 git clone https://github.com/stefisha/Cat-Vision.git
@@ -33,109 +50,109 @@ cd Cat-Vision
 python3.11 -m venv .venv
 source .venv/bin/activate  # Windows PowerShell: .venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install -e '.[ml,dev]'
+python -m pip install -e '.[ml,report,dev]'
 cat-vision --help
 ```
 
-For a fully resolved environment, use [uv](https://docs.astral.sh/uv/): `uv sync --frozen --extra ml --extra dev`, then run commands with `uv run --frozen --extra ml --extra dev`. The pip installation pins direct dependencies; `uv.lock` also fixes transitive dependencies. CI installs from the lockfile.
+For the fully resolved environment, use [uv](https://docs.astral.sh/uv/): `uv sync --frozen --extra ml --extra report --extra dev`, then run commands with `uv run --no-sync`. Direct versions and all resolved transitive versions are committed. CI uses the frozen lockfile.
 
-### 1. Bring your own cats
-
-Download and extract the [Gano Cat Breed Image Collection](https://www.kaggle.com/datasets/shawngano/gano-cat-breed-image-collection). Review its current terms and image provenance before use or redistribution. Kaggle credentials and data stay out of Git.
-
-Point `--data-dir` at the directory whose **immediate subdirectories are breed labels**:
-
-```text
-data/raw/Gano-Cat-Breeds-V1_1/
-├── Abyssinian/
-│   ├── cat-001.jpg
-│   └── ...
-├── Bengal/
-└── ...
-```
-
-The pipeline discovers the labels; it does not hard-code 15 breeds. Each class needs at least three unique valid images. That minimum supports smoke testing, not a credible benchmark.
-
-### 2. Validate and freeze the split
+### 1. Fetch the pinned collection
 
 ```bash
-cat-vision prepare \
-  --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
-  --manifest data/manifests/v1.json
+python scripts/fetch_gano.py
 ```
 
-This creates approximately **70% train / 15% validation / 15% test per class** using seed 42. Review the manifest's `rejected` and `duplicates` lists before training. Existing manifests are never silently overwritten. Training and evaluation verify file hashes, so modifying an image requires a new manifest and a new experiment.
+This downloads Kaggle version 3, checks its SHA-256 and safely extracts it into `data/raw/Gano-Cat-Breeds-V1_1/`. The source page states CC BY-SA 4.0; see the [source record](docs/results/gano-v3/source.json) and [data guide](docs/data.md). Raw photos, credentials and generated models stay outside Git.
 
-Exact duplicates are removed before splitting. Near-duplicates and multiple photos of the same cat can still leak between splits; audit these before publishing performance claims. See the [data guide](docs/data.md).
+For a different collection, arrange images under immediate label folders and supply the root with `--data-dir`. Each class needs at least three unique valid images; this minimum supports tests, not a credible performance estimate.
 
-### 3. Train a baseline
+### 2. Audit and freeze split membership
+
+```bash
+cat-vision audit \
+  --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
+  --decisions docs/results/gano-v3/review-decisions.json \
+  --output data/audits/gano-v3.json
+
+cat-vision prepare \
+  --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
+  --audit data/audits/gano-v3.json \
+  --manifest data/manifests/gano-v3.json
+```
+
+The measured split retains **5,573 images: 3,896 train / 841 validation / 836 test**. It removes 52 redundant exact files and keeps reviewed photo-copy/filename-ID groups together. The committed [manifest](docs/results/gano-v3/manifest.json) is the exact experiment membership; regenerated membership should match it. Near-duplicate screening does not establish complete animal identity independence.
+
+### 3. Train the selected baseline
+
+This quick start uses the published selected recipe. The experiment guide reproduces the full comparison.
 
 ```bash
 cat-vision train \
   --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
-  --manifest data/manifests/v1.json \
-  --config configs/baseline.json \
-  --run-dir runs/baseline-v1
+  --manifest docs/results/gano-v3/manifest.json \
+  --config configs/frozen-horizontal-flip.json \
+  --run-dir runs/gano-v3/frozen-horizontal-flip
 ```
 
-`--config` is required; pass an absolute config path when running outside the checkout. The first baseline run downloads ImageNet weights. Validation loss selects `model.keras`; the test set is never supplied to `fit`. Run directories are immutable destinations: choose a new name for each experiment. See [training and experiments](docs/experiments.md) for the rationale and run artifacts.
+`--config` is explicit. The first run downloads ImageNet weights; validation loss selects `model.keras`. Existing run destinations are never silently overwritten. Follow [the experiment guide](docs/experiments.md) to repeat the three-recipe comparison and validation-only selection.
 
-### 4. Evaluate once the experiment is selected
+### 4. Evaluate the selected run and generate a report
 
 ```bash
 cat-vision evaluate \
   --data-dir data/raw/Gano-Cat-Breeds-V1_1 \
-  --run-dir runs/baseline-v1
+  --run-dir runs/gano-v3/frozen-horizontal-flip
+
+cat-vision report --run-dir runs/gano-v3/frozen-horizontal-flip
 ```
 
-Read `metrics.json` and `test_predictions.json` in the run directory. The confusion matrix uses the `classes` order, with **actual labels in rows and predictions in columns**. Compare macro F1 and per-breed recall with overall accuracy; inspect mistakes rather than selecting only attractive examples.
+Open the run's `test-report/index.html` offline. It includes learning curves, confusion counts, per-label recall, a reliability diagram and confident-error records. To embed local photo thumbnails, add `--data-dir ... --include-images`; photos are omitted by default and nothing is uploaded. Review image rights before sharing a report with embedded photos.
 
-### 5. Try an image
+### 5. Try your cat
 
 ```bash
 cat-vision predict \
-  --run-dir runs/baseline-v1 \
+  --run-dir runs/gano-v3/frozen-horizontal-flip \
   --image /path/to/your/cat.jpg \
   --top-k 3
 ```
 
-The output is ranked breed scores. A softmax score is not a calibrated probability of ancestry. The model always chooses among its known labels—even for a mixed-breed cat, a dog, or an empty photo. See the [model card](docs/model-card.md).
+Scores rank known labels; they are not calibrated probabilities of ancestry. There is no unknown/non-cat detector. See the [model card](docs/model-card.md).
 
 ## Project map
 
 ```text
-src/cat_vision/       Data contracts, model, pipeline, CLI
-configs/             Versioned experiment settings
+src/cat_vision/       Audit, data contracts, model, training, metrics, reports, CLI
+configs/             The three planned experiment recipes and original baseline
+scripts/             Checksum-pinned dataset acquisition
 notebooks/           Original exploratory experiment (historical)
-tests/               Data tests and TensorFlow round-trip smoke test
-docs/                Data guide, decisions, experiments, model card
-assets/              Repository artwork
+tests/               Synthetic data, training, reporting and provenance regressions
+docs/results/        Measured evidence, manifest, audit decisions and figures
 .github/             CI and contribution templates
-uv.lock              Resolved dependency versions
+uv.lock              Full resolved dependency versions
 ```
 
 ## Development
 
 ```bash
-# With the activated environment from above:
 ruff check .
 ruff format --check .
 pytest -q
 ```
 
-The test suite creates tiny synthetic images and uses `weights=None`; it needs neither Kaggle data nor a pretrained-weight download. It verifies plumbing, not model quality. The lightweight subset can run without TensorFlow: install `'.[dev]'`, then `pytest -m 'not ml' -q`.
+Tests use generated images and random model weights; no Kaggle access or ImageNet download is needed. Install `.[dev,report]` and run `pytest -m 'not ml' -q` for the lightweight subset without TensorFlow. Passing software tests is not evidence of recognition accuracy.
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) for changes, [architecture](docs/architecture.md) for design decisions, and [verification](docs/verification.md) for the checks performed during this refactor.
+Read [CONTRIBUTING.md](CONTRIBUTING.md), [architecture](docs/architecture.md), and the [verification record](docs/verification.md).
 
-## Next experiments
+## Next questions
 
-1. Audit near-duplicates and source groups, then publish a versioned real-data baseline.
-2. Compare gentle fine-tuning against the frozen backbone using validation data only.
-3. Examine calibration, class-specific errors, and photos outside the training distribution.
-4. Add a small inference demo once a documented model is available.
+1. How well does the selected model work on an independent set of real phone photos?
+2. How stable are results across training seeds and more complete animal-identity groups?
+3. Can calibrated scores and unknown/non-cat examples support a useful “unsure” response?
+4. Can a small upload demo explain the model's predictions and limits clearly?
 
 ## Credits and license
 
-Dataset: [Gano Cat Breed Image Collection](https://www.kaggle.com/datasets/shawngano/gano-cat-breed-image-collection). Backbone: [MobileNetV2](https://arxiv.org/abs/1801.04381), via [Keras Applications](https://www.tensorflow.org/api_docs/python/tf/keras/applications/MobileNetV2). Original experiment: [historical notebook](notebooks/original_experiment.ipynb).
+Dataset: [ShawnGano / Olivia Gano's Gano Cat Breed Image Collection](https://www.kaggle.com/datasets/shawngano/gano-cat-breed-image-collection). Backbone: [MobileNetV2](https://arxiv.org/abs/1801.04381), via [Keras Applications](https://www.tensorflow.org/api_docs/python/tf/keras/applications/MobileNetV2). Original experiment: [historical notebook](notebooks/original_experiment.ipynb).
 
-Code and repository artwork are under the [MIT license](LICENSE). Dataset images and third-party model weights retain their own terms. This is a hobby and learning project, not a tool for establishing a cat's ancestry or making care decisions.
+Code and repository artwork use the [MIT license](LICENSE). Dataset photos and third-party weights retain their own terms. This project does not establish ancestry or support health, care, breeding or pedigree decisions.

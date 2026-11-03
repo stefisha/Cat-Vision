@@ -1,6 +1,23 @@
 # Changelog
 
-## Unreleased — review corrections
+## Unreleased — first measured experiment
+
+- Audit the pinned Gano v3 collection, review similarity candidates, and freeze group-disjoint splits.
+- Add optional augmentation, traced partial fine-tuning, validation-only checkpoint selection, and group-bootstrap intervals.
+- Train and compare three fixed recipes; publish the selected model's 75.4% test accuracy, 0.751 macro F1 and 93.7% top-3 accuracy on 836 held-out images.
+- Add standalone evaluation reports, scientific plots, opt-in local photo galleries, full experiment evidence, and runtime measurements.
+- Document the source taxonomy, data limitations, actual results, reproducibility commands and model card.
+
+### Review integrity follow-up
+
+- Bind visual judgments to both reviewed image hashes and evaluation scores to model/config/manifest fingerprints.
+- Reject mixed metrics, changed saved class maps and inconsistent inherited-weight metadata.
+- Verify incoming downloads before promoting them to trusted archives, with clean retry behavior.
+- Repair oversized initial group holdouts without changing the frozen experiment split.
+- Add accessible diagnostic data tables, complete tied confusion rows, clearer config/help text and committed benchmark reproduction.
+- Preserve original pre-test selection evidence while verifying unchanged checkpoints and results under the stricter checks.
+
+### Review corrections
 
 - Require an explicit training config path so installed CLI runs do not assume the checkout is the current directory.
 - Record oversized-image decompression errors as data rejections without disabling Pillow's safety limit.
